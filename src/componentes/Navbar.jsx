@@ -13,13 +13,14 @@ function Navbar({ onAdminClick }) {
           <a href="#inicio">Inicio</a>
           <a href="#propiedades">Propiedades</a>
           <a href="#servicios">Servicios</a>
-          <a href="#agendar">Agendar Visita</a>
           <button type="button" className="nav-link-button" onClick={onAdminClick}>
             Acceso Admin
           </button>
         </nav>
 
-        <button className="btn-primary">Agendar Cita</button>
+        <a href="#agendar"><button className="btn-primary">
+          Agendar Cita
+        </button></a>
       </div>
     </header>
   );
