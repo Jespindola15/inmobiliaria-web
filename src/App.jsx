@@ -9,11 +9,11 @@ function App() {
 
   return (
     <>
-      <Navbar onAdminClick={() => setAdminMode(true)} />
       {adminMode ? (
         <AdminPanel onClose={() => setAdminMode(false)} />
       ) : (
         <>
+          <Navbar onAdminClick={() => setAdminMode(true)} />
           <Home />
           <Footer />
         </>
