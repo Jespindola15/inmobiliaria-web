@@ -4,6 +4,7 @@ import Contratos from "../pages/admin/contratos";
 import Facturas from "../pages/admin/facturas";
 import Citas from "../pages/admin/citas";
 import Clientes from "../pages/admin/clientes";
+import Propiedades from "../pages/admin/propiedades";
 import "../pages/admin/admin.css";
 
 const pages = [
@@ -12,6 +13,7 @@ const pages = [
   { key: "facturas", label: "Facturas" },
   { key: "citas", label: "Citas" },
   { key: "clientes", label: "Clientes" },
+  { key: "propiedades", label: "Propiedades" },
 ];
 
 const pageComponents = {
@@ -20,6 +22,7 @@ const pageComponents = {
   facturas: Facturas,
   citas: Citas,
   clientes: Clientes,
+  propiedades: Propiedades,
 };
 
 export default function AdminPanel({ initialSection = "dashboard", onClose }) {
