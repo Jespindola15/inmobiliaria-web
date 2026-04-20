@@ -11,9 +11,9 @@ function Navbar({ onAdminClick }) {
 
         <nav>
           <a href="#">Inicio</a>
-          <a href="#">Propiedades</a>
-          <a href="#">Servicios</a>
-          <a href="#">Agendar Visita</a>
+          <a href="#propiedades">Propiedades</a>
+          <a href="#servicios">Servicios</a>
+          <a href="#agendar">Agendar Visita</a>
           <button type="button" className="nav-link-button" onClick={onAdminClick}>
             Acceso Admin
           </button>
