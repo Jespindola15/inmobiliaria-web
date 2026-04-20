@@ -7,23 +7,34 @@ function Home() {
   return (
     <main>
 
-      {/* HERO */}
+            {/* HERO */}
       <section id="inicio" className="hero">
-        <div className="container">
-          <span className="badge">Inmobiliaria Líder en Buenos Aires</span>
-          <h1>
-            Encuentra el hogar donde <br />
-            <span>comienza tu historia.</span>
-          </h1>
+        <div className="container hero-grid">
+          
+          {/* TEXTO */}
+          <div className="hero-text">
+            <span className="badge">Inmobiliaria Líder en Buenos Aires</span>
 
-          <p>
-            Ofrecemos las mejores propiedades con asesoramiento personalizado y gestión transparente.
-          </p>
+            <h1>
+              Encuentra el hogar donde <br />
+              <span>comienza tu historia.</span>
+            </h1>
 
-          <div className="hero-buttons">
-            <button className="btn-primary">Ver Catálogo</button>
-            <button className="btn-secondary">Solicitar Visita</button>
+            <p>
+              Ofrecemos las mejores propiedades con asesoramiento personalizado y gestión transparente.
+            </p>
+
+            <div className="hero-buttons">
+              <button className="btn-primary">Ver Catálogo</button>
+              <button className="btn-secondary">Solicitar Visita</button>
+            </div>
           </div>
+
+          {/* IMAGEN */}
+          <div className="hero-img">
+          <img src="/inmobiliaria-web/hero.png" alt="Propiedad" />          
+          </div>
+
         </div>
       </section>
 

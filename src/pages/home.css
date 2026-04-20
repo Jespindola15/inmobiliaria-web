@@ -9,19 +9,23 @@
   padding: 0 20px;
 }
 
+/* 🔥 NUEVO GRID HERO */
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  align-items: center;
+  gap: 40px;
+}
+
+/* TEXTO */
+.hero-text {
+  max-width: 600px;
+}
+
 .hero h1 {
   font-size: clamp(3.5rem, 5vw, 5.4rem);
   line-height: 1.02;
   max-width: 760px;
-}
-
-.hero-card-section {
-  margin-top: 40px;
-}
-
-.hero-card-section .container {
-  display: flex;
-  justify-content: center;
 }
 
 .hero span {
@@ -36,6 +40,21 @@
   font-size: 1.05rem;
 }
 
+/* IMAGEN */
+.hero-img {
+  display: flex;
+  justify-content: center;
+}
+
+.hero-img img {
+  width: 100%;
+  max-width: 480px;
+  border-radius: 50px;
+  object-fit: cover;
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0);
+}
+
+/* BADGE */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -49,6 +68,7 @@
   margin-bottom: 28px;
 }
 
+/* BOTONES */
 .hero-buttons {
   margin-top: 36px;
   display: flex;
@@ -84,6 +104,36 @@
 .btn-secondary:hover {
   background: #f8fafc;
   transform: translateY(-1px);
+}
+
+/* RESPONSIVE HERO */
+@media (max-width: 900px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .hero-text {
+    margin: 0 auto;
+  }
+
+  .hero-buttons {
+    justify-content: center;
+  }
+
+  .hero-img {
+    margin-top: 30px;
+  }
+}
+
+/* HERO CARD (lo dejo por si lo usás después) */
+.hero-card-section {
+  margin-top: 40px;
+}
+
+.hero-card-section .container {
+  display: flex;
+  justify-content: center;
 }
 
 .hero-card {
@@ -298,15 +348,7 @@
   line-height: 1.8;
 }
 
-/* Scroll margin for anchor links */
-#inicio,
-#propiedades,
-#servicios,
-#agendar {
-  scroll-margin-top: 100px;
-}
-
-/* Scroll margin for anchor links */
+/* SCROLL */
 #inicio,
 #propiedades,
 #servicios,
