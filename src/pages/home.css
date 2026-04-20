@@ -298,6 +298,22 @@
   line-height: 1.8;
 }
 
+/* Scroll margin for anchor links */
+#inicio,
+#propiedades,
+#servicios,
+#agendar {
+  scroll-margin-top: 100px;
+}
+
+/* Scroll margin for anchor links */
+#inicio,
+#propiedades,
+#servicios,
+#agendar {
+  scroll-margin-top: 100px;
+}
+
 .info-contact {
   margin: 26px 0 0;
   display: grid;

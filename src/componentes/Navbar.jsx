@@ -10,7 +10,7 @@ function Navbar({ onAdminClick }) {
         </div>
 
         <nav>
-          <a href="#">Inicio</a>
+          <a href="#inicio">Inicio</a>
           <a href="#propiedades">Propiedades</a>
           <a href="#servicios">Servicios</a>
           <a href="#agendar">Agendar Visita</a>
