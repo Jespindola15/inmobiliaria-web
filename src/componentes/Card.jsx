@@ -12,9 +12,9 @@ function Card() {
 
       <div className="card-body">
         <p className="card-location">Ponce de León 162</p>
-        <h3>$ 888.888,00</h3>
+        <h3>$ 888.888</h3>
         <p className="card-description">Propiedad premium en zona céntrica con vista al río y espacios amplios.</p>
-        <button>Consultar →</button>
+        <button>Consultar</button>
       </div>
     </div>
   );
