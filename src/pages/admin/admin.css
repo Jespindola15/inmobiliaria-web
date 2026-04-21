@@ -228,3 +228,17 @@
 .fab-button:active {
   transform: scale(0.95);
 }
+
+.btn-success {
+  background: #1c3892;
+  border: none;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-success:hover {
+  background: #162e7a;
+}
