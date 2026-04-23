@@ -1,5 +1,6 @@
 import "./admin.css";
 import { useState } from "react";
+import Card from "../../componentes/Card";
 
 export default function Propiedades() {
   const [showForm, setShowForm] = useState(false);
@@ -7,9 +8,16 @@ export default function Propiedades() {
   return (
     <main className="admin-page">
       <div className="propiedades-container">
-        <h1>Gestión de Propiedades</h1>
-        <div className="admin-list">
-          <p>No hay propiedades registradas aún</p>
+       
+        <div className="section-card"> 
+          <div className="admin-list">
+            <Card />
+            <Card />
+            <Card />
+            <Card />
+            
+            
+          </div>
         </div>
       </div>
 
