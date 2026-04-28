@@ -63,6 +63,20 @@ nav a {
   padding: 0;
 }
 
+.nav-link-button-admin {
+  background: #000000;
+  color: white;
+  padding: 12px 26px;
+  border-radius: 14px;
+  font-weight: 600;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
 .btn-primary {
   background: var(--azul2);
   color: white;
@@ -71,4 +85,12 @@ nav a {
   border-radius: 14px;
   cursor: pointer;
   font-weight: 600;
+}
+
+.nav-links {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+  align-items: center;
+  
 }

@@ -9,18 +9,20 @@ function Navbar({ onAdminClick }) {
           Gestión Pro
         </div>
 
-        <nav>
+        <nav className="nav-links">
           <a href="#inicio">Inicio</a>
           <a href="#propiedades">Propiedades</a>
           <a href="#servicios">Servicios</a>
-          <button type="button" className="nav-link-button" onClick={onAdminClick}>
-            Acceso Admin
-          </button>
         </nav>
 
-        <a href="#agendar"><button className="btn-primary">
-          Agendar Cita
-        </button></a>
+        <div className="nav-buttons">
+          <a href="#agendar"><button className="btn-primary">
+            Agendar Cita
+          </button></a>
+          <button type="button" className="nav-link-button nav-link-button-admin" onClick={onAdminClick}>
+            Modo Admin
+          </button>
+        </div>
       </div>
     </header>
   );
