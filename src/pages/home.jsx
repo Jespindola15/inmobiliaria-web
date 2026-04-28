@@ -69,7 +69,7 @@ function Home() {
             <SwiperSlide><Card /></SwiperSlide>
           </Swiper>
         </div>
-      </section>
+      </section> 
 
       {/* SERVICIOS */}
       <section id="servicios" className="servicios">

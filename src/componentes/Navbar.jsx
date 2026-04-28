@@ -5,8 +5,8 @@ function Navbar({ onAdminClick }) {
     <header className="navbar">
       <div className="container nav-content">
         <div className="brand">
-          <span className="brand-mark">G</span>
-          Gestión Pro
+          <span className="brand-mark">I</span>
+          inmobiliaria
         </div>
 
         <nav className="nav-links">
