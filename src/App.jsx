@@ -15,7 +15,11 @@ function App() {
   return (
     <div className={darkMode ? "app dark" : "app"}>
       {adminMode ? (
-        <AdminPanel onClose={() => setAdminMode(false)} />
+        <AdminPanel
+          onClose={() => setAdminMode(false)}
+          darkMode={darkMode}
+          onToggleDarkMode={() => setDarkMode((prev) => !prev)}
+        />
       ) : (
         <>
           <Navbar
