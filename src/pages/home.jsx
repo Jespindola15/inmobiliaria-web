@@ -1,13 +1,33 @@
 import "./home.css";
 import Card from "../componentes/Card";
 import { Swiper, SwiperSlide } from 'swiper/react';
+import { useState, useEffect } from "react";
 import 'swiper/css';
 
+const API_BASE_URL = "http://localhost:5000/api";
+
 function Home() {
+  const [propiedades, setPropiedades] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/propiedades`)
+      .then(response => response.json())
+      .then(data => {
+        setPropiedades(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Error cargando propiedades en Home:", err);
+        setLoading(false);
+        setPropiedades([]);
+      });
+  }, []);
+
   return (
     <main>
 
-            {/* HERO */}
+      {/* HERO */}
       <section id="inicio" className="hero">
         <div className="container hero-grid">
           
@@ -32,13 +52,11 @@ function Home() {
 
           {/* IMAGEN */}
           <div className="hero-img">
-          <img src="/inmobiliaria-web/hero.png" alt="Propiedad" />          
+            <img src="/inmobiliaria-web/hero.png" alt="Propiedad" />          
           </div>
 
         </div>
       </section>
-
-      
 
       {/* PROPIEDADES */}
       <section id="propiedades" className="propiedades container">
@@ -48,26 +66,39 @@ function Home() {
         </div>
 
         <div className="cards">
-          <Swiper
-            spaceBetween={24}
-            slidesPerView={1}
-            breakpoints={{
-              640: {
-                slidesPerView: 2,
-              },
-              1024: {
-                slidesPerView: 3,
-              },
-            }}
-            loop={true}
-            autoplay={{ delay: 3000 }}
-          >
-            <SwiperSlide><Card /></SwiperSlide>
-            <SwiperSlide><Card /></SwiperSlide>
-            <SwiperSlide><Card /></SwiperSlide>
-            <SwiperSlide><Card /></SwiperSlide>
-            <SwiperSlide><Card /></SwiperSlide>
-          </Swiper>
+          {loading ? (
+            <p style={{textAlign: 'center', padding: '40px'}}>Cargando propiedades...</p>
+          ) : propiedades.length > 0 ? (
+            <Swiper
+              spaceBetween={24}
+              slidesPerView={1}
+              breakpoints={{
+                640: {
+                  slidesPerView: 2,
+                },
+                1024: {
+                  slidesPerView: 3,
+                },
+              }}
+              loop={propiedades.length > 3}
+              autoplay={{ delay: 3000 }}
+            >
+              {propiedades.map((p) => (
+                <SwiperSlide key={p.id}>
+                  <Card 
+                    tipo={p.tipo}
+                    estado={p.estado}
+                    imagen={p.imagen}
+                    ubicacion={p.ubicacion}
+                    precio={p.precio}
+                    descripcion={p.descripcion}
+                  />
+                </SwiperSlide>
+              ))}
+            </Swiper>
+          ) : (
+            <p style={{textAlign: 'center', padding: '40px'}}>No hay propiedades disponibles en este momento.</p>
+          )}
         </div>
       </section> 
 
