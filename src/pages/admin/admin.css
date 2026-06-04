@@ -349,6 +349,34 @@
   background: #162e7a;
 }
 
+.btn-danger {
+  background: #ef4444;
+  border: none;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-secondary:hover {
+  background: #e5e7eb;
+}
+
 /* --- Nuevos Estilos de Administración --- */
 
 .admin-stats-grid {
