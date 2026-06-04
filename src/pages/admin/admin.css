@@ -619,3 +619,265 @@
 .rbc-day-bg + .rbc-day-bg {
   border-left: 1px solid #e5e7eb !important;
 }
+
+/* Dark Mode Styles for Admin Panel */
+.admin-page.dark {
+  background: #1a222f;
+  color: #e2e8f0;
+}
+
+.admin-page.dark .admin-sidebar {
+  background: #243344;
+  border-right-color: #3a4a5c;
+}
+
+.admin-page.dark .sidebar-brand strong {
+  color: #e2e8f0;
+}
+
+.admin-page.dark .sidebar-brand small {
+  color: #94a3b8;
+}
+
+.admin-page.dark .sidebar-link {
+  color: #cbd5e1;
+}
+
+.admin-page.dark .sidebar-link:hover,
+.admin-page.dark .sidebar-link.active {
+  background: rgba(37, 99, 235, 0.2);
+  color: #60a5fa;
+}
+
+.admin-page.dark .admin-panel-main {
+  background: #1a222f;
+}
+
+.admin-page.dark .admin-panel-top h1 {
+  color: #e2e8f0;
+}
+
+.admin-page.dark .admin-panel-tag {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
+
+.admin-page.dark .admin-panel-close,
+.admin-page.dark .admin-panel-theme-btn {
+  background: #364558;
+  border-color: #4a5f7f;
+  color: #e2e8f0;
+}
+
+.admin-page.dark .admin-panel-close:hover,
+.admin-page.dark .admin-panel-theme-btn:hover {
+  background: #445b75;
+  border-color: #5a7fa0;
+}
+
+.admin-page.dark .dashboard-card,
+.admin-page.dark .dashboard-section-large,
+.admin-page.dark .dashboard-section-small {
+  background: #293545;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.admin-page.dark .dashboard-card h3,
+.admin-page.dark .dashboard-section-large h2,
+.admin-page.dark .dashboard-section-small h2 {
+  color: #e2e8f0;
+}
+
+.admin-page.dark .dashboard-card p,
+.admin-page.dark .dashboard-section-large p,
+.admin-page.dark .dashboard-section-small p {
+  color: #cbd5e1;
+}
+
+.admin-page.dark .dashboard-btn {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: white;
+}
+
+.admin-page.dark .dashboard-btn:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+.admin-page.dark .dashboard-btn-top {
+  background: #364558;
+  border-color: #4a5f7f;
+  color: #e2e8f0;
+}
+
+.admin-page.dark .stat-card {
+  background: #293545;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.admin-page.dark .stat-card span {
+  color: #94a3b8;
+}
+
+.admin-page.dark .stat-card strong {
+  color: #e2e8f0;
+}
+
+.admin-page.dark .search-input {
+  background: #364558;
+  border-color: #4a5f7f;
+  color: #e2e8f0;
+}
+
+.admin-page.dark .search-input::placeholder {
+  color: #94a3b8;
+}
+
+.admin-page.dark .search-input:focus {
+  border-color: #2563eb;
+}
+
+.admin-page.dark .table-container {
+  background: #293545;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.admin-page.dark .data-table th {
+  background: #3a4f63;
+  color: #cbd5e1;
+  border-bottom-color: #4a5f7f;
+}
+
+.admin-page.dark .data-table td {
+  color: #cbd5e1;
+  border-bottom-color: #364558;
+}
+
+.admin-page.dark .data-table tr:hover {
+  background: rgba(37, 99, 235, 0.1);
+}
+
+.admin-page.dark .action-btn {
+  color: #94a3b8;
+}
+
+.admin-page.dark .action-btn:hover {
+  background: #364558;
+  color: #e2e8f0;
+}
+
+.admin-page.dark .modal-overlay {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.admin-page.dark .modal-form {
+  background: #293545;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+}
+
+.admin-page.dark .modal-form h2 {
+  color: #e2e8f0;
+}
+
+.admin-page.dark .modal-form input,
+.admin-page.dark .modal-form textarea {
+  background: #364558;
+  border-color: #4a5f7f;
+  color: #e2e8f0;
+}
+
+.admin-page.dark .modal-form input::placeholder,
+.admin-page.dark .modal-form textarea::placeholder {
+  color: #94a3b8;
+}
+
+.admin-page.dark .modal-form input:focus,
+.admin-page.dark .modal-form textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.admin-page.dark .fab-button {
+  background: #2563eb;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.5);
+}
+
+.admin-page.dark .fab-button:hover {
+  background: #1d4ed8;
+}
+
+.admin-page.dark .btn-success {
+  background: #059669;
+}
+
+.admin-page.dark .btn-success:hover {
+  background: #047857;
+}
+
+.admin-page.dark .calendar-container {
+  background: #293545;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+.admin-page.dark .rbc-header {
+  background: #3a4f63 !important;
+  color: #cbd5e1 !important;
+  border-bottom-color: #4a5f7f !important;
+}
+
+.admin-page.dark .rbc-off-range-bg {
+  background: #253446 !important;
+}
+
+.admin-page.dark .rbc-today {
+  background-color: rgba(37, 99, 235, 0.1) !important;
+}
+
+.admin-page.dark .rbc-toolbar button {
+  color: #cbd5e1 !important;
+  border-color: #4a5f7f !important;
+  background: transparent !important;
+}
+
+.admin-page.dark .rbc-toolbar button:hover {
+  background-color: #364558 !important;
+}
+
+.admin-page.dark .rbc-toolbar button.rbc-active {
+  background-color: #2563eb !important;
+  color: white !important;
+  border-color: #2563eb !important;
+}
+
+.admin-page.dark .rbc-month-view,
+.admin-page.dark .rbc-time-view,
+.admin-page.dark .rbc-agenda-view {
+  border-color: #4a5f7f !important;
+  background: #293545 !important;
+}
+
+.admin-page.dark .rbc-month-row {
+  border-top-color: #4a5f7f !important;
+}
+
+.admin-page.dark .rbc-day-bg + .rbc-day-bg {
+  border-left-color: #4a5f7f !important;
+}
+
+.admin-panel-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.admin-panel-theme-btn {
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  color: #111827;
+  padding: 12px 18px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+}

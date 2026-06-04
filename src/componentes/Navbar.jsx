@@ -1,6 +1,6 @@
 import "./navbar.css";
 
-function Navbar({ onAdminClick }) {
+function Navbar({ darkMode, onToggleDarkMode, onAdminClick }) {
   return (
     <header className="navbar">
       <div className="container nav-content">
@@ -16,10 +16,21 @@ function Navbar({ onAdminClick }) {
         </nav>
 
         <div className="nav-buttons">
-          <a href="#agendar"><button className="btn-primary">
-            Agendar Cita
-          </button></a>
-          <button type="button" className="nav-link-button nav-link-button-admin" onClick={onAdminClick}>
+          <button
+            type="button"
+            className="nav-link-button nav-link-button-theme"
+            onClick={onToggleDarkMode}
+          >
+            {darkMode ? "Modo Claro" : "Modo Oscuro"}
+          </button>
+          <a href="#agendar">
+            <button className="btn-primary">Agendar Cita</button>
+          </a>
+          <button
+            type="button"
+            className="nav-link-button nav-link-button-admin"
+            onClick={onAdminClick}
+          >
             Modo Admin
           </button>
         </div>

@@ -71,6 +71,26 @@ nav a {
   font-weight: 600;
 }
 
+.nav-link-button-theme {
+  font-size: 15px;
+  color: #334155;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  border-radius: 14px;
+  padding: 12px 24px;
+  cursor: pointer;
+}
+
+.nav-link-button-theme:hover {
+  background: rgba(255, 255, 255, 1);
+}
+
+body.dark .nav-link-button-theme {
+  color: #e2e8f0;
+  background: rgba(15, 23, 42, 0.9);
+  border-color: rgba(148, 163, 184, 0.35);
+}
+
 .nav-buttons {
   display: flex;
   gap: 16px;
@@ -93,4 +113,49 @@ nav a {
   flex-wrap: wrap;
   align-items: center;
   
+}
+
+/* Dark Mode Navbar Styles */
+body.dark .navbar {
+  background: rgba(15, 23, 42, 0.98);
+  border-bottom-color: rgba(51, 65, 85, 0.5);
+}
+
+body.dark nav a {
+  color: #cbd5e1;
+}
+
+body.dark nav a:hover {
+  color: #e2e8f0;
+}
+
+body.dark .nav-link-button {
+  color: #cbd5e1;
+}
+
+body.dark .nav-link-button:hover {
+  color: #e2e8f0;
+}
+
+body.dark .nav-link-button-admin {
+  background: #2563eb;
+  color: white;
+}
+
+body.dark .nav-link-button-admin:hover {
+  background: #1d4ed8;
+}
+
+body.dark .nav-link-button-theme {
+  color: #e2e8f0;
+  background: rgba(30, 41, 59, 0.9);
+  border-color: rgba(71, 85, 105, 0.4);
+}
+
+body.dark .nav-link-button-theme:hover {
+  background: rgba(30, 41, 59, 1);
+}
+
+body.dark .brand {
+  color: #e2e8f0;
 }

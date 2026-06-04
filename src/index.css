@@ -12,6 +12,19 @@ body {
   scroll-behavior: smooth;
 }
 
+body.dark {
+  background: #0d1425;
+  color: #e2e8f0;
+}
+
+body.dark a {
+  color: #93c5fd;
+}
+
+.app {
+  min-height: 100vh;
+}
+
 .container {
   max-width: 1200px;
   margin: auto;

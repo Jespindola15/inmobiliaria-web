@@ -25,12 +25,12 @@ const pageComponents = {
   propiedades: Propiedades,
 };
 
-export default function AdminPanel({ initialSection = "dashboard", onClose }) {
+export default function AdminPanel({ initialSection = "dashboard", onClose, darkMode, onToggleDarkMode }) {
   const [section, setSection] = useState(initialSection);
   const SectionComponent = pageComponents[section] || Dashboard;
 
   return (
-    <div className="admin-page admin-panel">
+    <div className={`admin-page admin-panel ${darkMode ? "dark" : ""}`}>
       <aside className="admin-sidebar">
         <div className="sidebar-brand">
           <span className="sidebar-logo">G</span>
@@ -60,9 +60,18 @@ export default function AdminPanel({ initialSection = "dashboard", onClose }) {
             <p className="admin-panel-tag">Panel interno</p>
             <h1>{pages.find((page) => page.key === section)?.label || "Dashboard"}</h1>
           </div>
-          <button className="admin-panel-close" type="button" onClick={onClose}>
-            Volver al sitio
-          </button>
+          <div className="admin-panel-buttons">
+            <button
+              type="button"
+              className="admin-panel-theme-btn"
+              onClick={onToggleDarkMode}
+            >
+              {darkMode ? "Modo Claro" : "Modo Oscuro"}
+            </button>
+            <button className="admin-panel-close" type="button" onClick={onClose}>
+              Volver al sitio
+            </button>
+          </div>
         </header>
 
         <main className="admin-panel-content">
