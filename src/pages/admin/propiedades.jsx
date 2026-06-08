@@ -20,20 +20,21 @@ export default function Propiedades() {
   const [imagen, setImagen] = useState("");
   const [descripcion, setDescripcion] = useState("");
 
-  useEffect(() => {
-    async function loadPropiedades() {
-      try {
-        const data = await fetchApi("/Propiedades");
-        setPropiedades(data);
-      } catch (err) {
-        console.error(err);
-        setError(err.message);
-        setPropiedades([]);
-      } finally {
-        setLoading(false);
-      }
+  const loadPropiedades = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchApi("/Propiedades");
+      setPropiedades(data);
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+      setPropiedades([]);
+    } finally {
+      setLoading(false);
     }
+  };
 
+  useEffect(() => {
     loadPropiedades();
   }, []);
 
@@ -67,10 +68,14 @@ export default function Propiedades() {
 
   const handleDelete = async (id) => {
     if (!window.confirm("¿Eliminar esta propiedad?")) return;
+    if (!id) {
+      setError("No se pudo eliminar: ID de la propiedad no está definido.");
+      return;
+    }
 
     try {
       await requestApi(`/Propiedades/${id}`, { method: "DELETE" });
-      setPropiedades((prev) => prev.filter((item) => item.id !== id));
+      await loadPropiedades();
     } catch (err) {
       console.error(err);
       setError(err.message);
@@ -111,10 +116,9 @@ export default function Propiedades() {
         estado: "Disponible",
       };
 
-      // Send the DTO directly (backend expects the object, not a wrapper)
       const bodyToSend = editingId ? { id: editingId, ...newProperty } : newProperty;
 
-      const created = await requestApi(
+      await requestApi(
         editingId ? `/Propiedades/${editingId}` : "/Propiedades",
         {
           method: editingId ? "PUT" : "POST",
@@ -123,16 +127,7 @@ export default function Propiedades() {
         }
       );
 
-      // If backend returns created object, normalize keys for frontend list
-      const added = created || (editingId ? newProperty : newProperty);
-
-      setPropiedades((prev) => {
-        if (editingId) {
-          return prev.map((item) => (item.id === editingId ? added : item));
-        }
-        return [added, ...prev];
-      });
-
+      await loadPropiedades();
       setShowForm(false);
       resetForm();
     } catch (err) {
