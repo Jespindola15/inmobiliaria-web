@@ -10,6 +10,8 @@ const localizer = momentLocalizer(moment);
 
 export default function Citas({ events: propsEvents, setEvents: propsSetEvents }) {
   const [showForm, setShowForm] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const [internalEvents, setInternalEvents] = useState([
     {
       id: 1,
@@ -54,6 +56,19 @@ export default function Citas({ events: propsEvents, setEvents: propsSetEvents }
     setNewEvento({ title: '', date: '', time: '', desc: '' });
   };
 
+  const handleDeleteEvent = () => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar esta cita?')) {
+      setEventsFn(events.filter(e => e.id !== selectedEvent.id));
+      setShowDetail(false);
+      setSelectedEvent(null);
+    }
+  };
+
+  const handleSelectEvent = (event) => {
+    setSelectedEvent(event);
+    setShowDetail(true);
+  };
+
   const messages = {
     allDay: 'Todo el día',
     previous: 'Anterior',
@@ -90,7 +105,7 @@ export default function Citas({ events: propsEvents, setEvents: propsSetEvents }
           endAccessor="end"
           selectable
           onSelectSlot={handleSelectSlot}
-          onSelectEvent={event => alert(`${event.title}\n\nNota: ${event.desc}`)}
+          onSelectEvent={handleSelectEvent}
           style={{ height: 'calc(100vh - 250px)', minHeight: '600px' }}
           messages={messages}
           culture='es'
@@ -155,6 +170,65 @@ export default function Citas({ events: propsEvents, setEvents: propsSetEvents }
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {showDetail && (
+        <div className="modal-overlay" onClick={() => setShowDetail(false)}></div>
+      )}
+
+      {showDetail && selectedEvent && (
+        <div className="modal-form">
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px'}}>
+            <h2 style={{margin: 0}}>Detalles de la Cita</h2>
+            <button 
+              className="action-btn" 
+              onClick={() => setShowDetail(false)}
+              style={{fontSize: '1.2rem'}}
+            >×</button>
+          </div>
+          
+          <div style={{display: 'flex', flexDirection: 'column', gap: '15px', marginBottom: '25px'}}>
+            <div>
+              <label style={{fontSize: '0.8rem', color: '#6b7280', display: 'block', marginBottom: '4px'}}>Título</label>
+              <div style={{fontWeight: '600', fontSize: '1.1rem'}}>{selectedEvent.title}</div>
+            </div>
+            
+            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px'}}>
+              <div>
+                <label style={{fontSize: '0.8rem', color: '#6b7280', display: 'block', marginBottom: '4px'}}>Fecha</label>
+                <div>{moment(selectedEvent.start).format('LL')}</div>
+              </div>
+              <div>
+                <label style={{fontSize: '0.8rem', color: '#6b7280', display: 'block', marginBottom: '4px'}}>Hora</label>
+                <div>{moment(selectedEvent.start).format('HH:mm')} - {moment(selectedEvent.end).format('HH:mm')} hs</div>
+              </div>
+            </div>
+
+            <div>
+              <label style={{fontSize: '0.8rem', color: '#6b7280', display: 'block', marginBottom: '4px'}}>Descripción / Notas</label>
+              <div style={{background: '#f9fafb', padding: '12px', borderRadius: '8px', border: '1px solid #e5e7eb'}}>
+                {selectedEvent.desc || <span style={{color: '#9ca3af', fontStyle: 'italic'}}>Sin descripción</span>}
+              </div>
+            </div>
+          </div>
+
+          <div className="modal-form-actions" style={{justifyContent: 'space-between'}}>
+            <button 
+              type="button" 
+              className="btn btn-danger"
+              onClick={handleDeleteEvent}
+            >
+              Eliminar Cita
+            </button>
+            <button 
+              type="button" 
+              className="btn btn-secondary"
+              onClick={() => setShowDetail(false)}
+            >
+              Cerrar
+            </button>
+          </div>
         </div>
       )}
     </div>

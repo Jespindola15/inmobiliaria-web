@@ -1,28 +1,55 @@
 import "./home.css";
 import Card from "../componentes/Card";
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import 'swiper/css';
-
-const API_BASE_URL = "http://localhost:5000/api";
+import { fetchApi } from "../api";
 
 function Home() {
   const [propiedades, setPropiedades] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const normalizeProperty = (property) => ({
+    id: property.id ?? property._id,
+    tipo: property.tipo ?? "Propiedad",
+    estado: property.estado ?? "Disponible",
+    imagen: property.imagen ?? property.imagenes?.[0] ?? "https://picsum.photos/500/320",
+    titulo: property.titulo ?? property.descripcion ?? "Propiedad disponible",
+    direccion: property.direccion ?? "Dirección no disponible",
+    ciudad: property.ciudad ?? "",
+    metrosCuadrados: property.metrosCuadrados ?? property.m2 ?? null,
+    operacion: property.operacion ?? "",
+    precio: property.precio ? `$ ${property.precio}` : "Consultar",
+    descripcion: property.descripcion ?? "Sin descripción disponible.",
+  });
+
+  const loadPropiedades = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await fetchApi("/Propiedades");
+      setPropiedades(
+        Array.isArray(data) ? data.map(normalizeProperty) : []
+      );
+      setError(null);
+    } catch (err) {
+      console.error("Error cargando propiedades en Home:", err);
+      setPropiedades([]);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/propiedades`)
-      .then(response => response.json())
-      .then(data => {
-        setPropiedades(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error("Error cargando propiedades en Home:", err);
-        setLoading(false);
-        setPropiedades([]);
-      });
-  }, []);
+    loadPropiedades();
+  }, [loadPropiedades]);
+
+  useEffect(() => {
+    const handleFocus = () => loadPropiedades();
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, [loadPropiedades]);
 
   return (
     <main>
@@ -60,42 +87,52 @@ function Home() {
 
       {/* PROPIEDADES */}
       <section id="propiedades" className="propiedades container">
-        <div className="section-header">
-          <h2>Propiedades en Stock</h2>
-          <p className="sub">Explora nuestras unidades destacadas y listas para habitar.</p>
+        <div className="section-header" style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap'}}>
+          <div>
+            <h2>Propiedades en Stock</h2>
+            <p className="sub">Explora nuestras unidades destacadas y listas para habitar.</p>
+          </div>
+          <button
+            className="btn btn-secondary"
+            type="button"
+            onClick={loadPropiedades}
+            disabled={loading}
+            style={{whiteSpace: 'nowrap', opacity: loading ? 0.7 : 1}}
+          >
+            {loading ? "Actualizando..." : "Actualizar propiedades"}
+          </button>
         </div>
 
         <div className="cards">
           {loading ? (
             <p style={{textAlign: 'center', padding: '40px'}}>Cargando propiedades...</p>
+          ) : error ? (
+            <p style={{textAlign: 'center', padding: '40px', color: '#b91c1c'}}>
+              Error cargando propiedades: {error}
+            </p>
           ) : propiedades.length > 0 ? (
-            <Swiper
-              spaceBetween={24}
-              slidesPerView={1}
-              breakpoints={{
-                640: {
-                  slidesPerView: 2,
-                },
-                1024: {
-                  slidesPerView: 3,
-                },
-              }}
-              loop={propiedades.length > 3}
-              autoplay={{ delay: 3000 }}
-            >
-              {propiedades.map((p) => (
-                <SwiperSlide key={p.id}>
-                  <Card 
+            <>
+              <p style={{textAlign: 'center', marginBottom: '20px', color: '#334155'}}>
+                Propiedades encontradas: {propiedades.length}
+              </p>
+              <div className="cards-grid">
+                {propiedades.map((p) => (
+                  <Card
+                    key={p.id}
                     tipo={p.tipo}
                     estado={p.estado}
                     imagen={p.imagen}
-                    ubicacion={p.ubicacion}
+                    titulo={p.titulo}
+                    direccion={p.direccion}
+                    ciudad={p.ciudad}
+                    metrosCuadrados={p.metrosCuadrados}
+                    operacion={p.operacion}
                     precio={p.precio}
                     descripcion={p.descripcion}
                   />
-                </SwiperSlide>
-              ))}
-            </Swiper>
+                ))}
+              </div>
+            </>
           ) : (
             <p style={{textAlign: 'center', padding: '40px'}}>No hay propiedades disponibles en este momento.</p>
           )}

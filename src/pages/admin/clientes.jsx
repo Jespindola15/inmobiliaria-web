@@ -1,7 +1,7 @@
 import "./admin.css";
 import { useState, useEffect } from "react";
-
-const API_BASE_URL = "http://localhost:5000/api"; 
+import AdminCard from "../../componentes/AdminCard";
+import { fetchApi, requestApi } from "../../api";
 
 export default function Clientes() {
   const [showForm, setShowForm] = useState(false);
@@ -9,23 +9,72 @@ export default function Clientes() {
   const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [nombre, setNombre] = useState("");
+  const [apellido, setApellido] = useState("");
+  const [dni, setDni] = useState("");
+  const [telefono, setTelefono] = useState("");
+  const [email, setEmail] = useState("");
+  const [tipoCliente, setTipoCliente] = useState("Propietario");
+
+  const resetForm = () => {
+    setNombre("");
+    setApellido("");
+    setDni("");
+    setTelefono("");
+    setEmail("");
+    setTipoCliente("Propietario");
+    setError(null);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!nombre || !apellido || !dni || !telefono || !email || !tipoCliente) {
+      setError("Todos los campos son obligatorios.");
+      return;
+    }
+
+    try {
+      const payload = {
+        nombre,
+        apellido,
+        dni: Number(dni),
+        email,
+        telefono,
+        tipoCliente,
+      };
+
+      const created = await requestApi("/Cliente", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      setClientes((prev) => [created || payload, ...prev]);
+      setShowForm(false);
+      resetForm();
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+    }
+  };
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/clientes`)
-      .then(response => {
-        if (!response.ok) throw new Error("Error al cargar los clientes");
-        return response.json();
-      })
-      .then(data => {
+    async function loadClientes() {
+      try {
+        const data = await fetchApi("/Cliente");
         setClientes(data);
-        setLoading(false);
-      })
-      .catch(err => {
+      } catch (err) {
         console.error(err);
         setError(err.message);
+        setClientes([]);
+      } finally {
         setLoading(false);
-        setClientes([]); 
-      });
+      }
+    }
+
+    loadClientes();
   }, []);
 
   const filteredClientes = (clientes || []).filter(cliente => 
@@ -69,47 +118,32 @@ export default function Clientes() {
         </button>
       </div>
 
-      <div className="table-container">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Nombre</th>
-              <th>Contacto</th>
-              <th>Última Interacción</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredClientes.length > 0 ? (
-              filteredClientes.map((cliente) => (
-                <tr key={cliente.id}>
-                  <td>
-                    <strong>{cliente.nombre}</strong><br />
-                    <small style={{color: '#6b7280'}}>{cliente.email}</small>
-                  </td>
-                  <td>{cliente.telefono}</td>
-                  <td>{cliente.ultima || "N/A"}</td>
-                  <td>
-                    <span className={`status-badge ${cliente.estado === "Activo" ? "status-active" : "status-expired"}`}>
-                      {cliente.estado}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="action-btns">
-                      <button className="action-btn" title="Editar">✏️</button>
-                      <button className="action-btn" title="Ver historial">👁️</button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="5" style={{textAlign: 'center', padding: '40px'}}>No se encontraron clientes.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      <div className="admin-list">
+        {filteredClientes.length > 0 ? (
+          filteredClientes.map((cliente) => (
+            <AdminCard
+              key={cliente.id}
+              title={cliente.nombre || "Cliente"}
+              subtitle={cliente.email}
+              status={cliente.estado}
+              statusClass={cliente.estado === "Activo" ? "status-active" : "status-expired"}
+              details={[
+                { label: "Teléfono", value: cliente.telefono },
+                { label: "Última interacción", value: cliente.ultima || "N/A" },
+              ]}
+              actions={(
+                <>
+                  <button className="btn-secondary" type="button">Editar</button>
+                  <button className="btn-secondary" type="button">Historial</button>
+                </>
+              )}
+            />
+          ))
+        ) : (
+          <div style={{width: '100%', textAlign: 'center', padding: '40px', background: 'white', borderRadius: '16px'}}>
+            No se encontraron clientes.
+          </div>
+        )}
       </div>
 
       
@@ -121,17 +155,59 @@ export default function Clientes() {
       {showForm && (
         <div className="modal-form">
           <h2>Nuevo Cliente</h2>
-          <form onSubmit={(e) => e.preventDefault()}>
-            <input type="text" placeholder="Nombre completo" required />
-            <input type="number" placeholder="Número de teléfono" required />
-            <input type="email" placeholder="Correo electrónico" required />
-            <textarea placeholder="Observaciones o notas adicionales"></textarea>
+          {error && <p style={{color: '#b91c1c'}}>{error}</p>}
+          <form onSubmit={handleSubmit}>
+            <input
+              type="text"
+              placeholder="Nombre"
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              required
+            />
+            <input
+              type="text"
+              placeholder="Apellido"
+              value={apellido}
+              onChange={(e) => setApellido(e.target.value)}
+              required
+            />
+            <input
+              type="number"
+              placeholder="DNI"
+              value={dni}
+              onChange={(e) => setDni(e.target.value)}
+              required
+            />
+            <input
+              type="email"
+              placeholder="Correo electrónico"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <input
+              type="text"
+              placeholder="Teléfono"
+              value={telefono}
+              onChange={(e) => setTelefono(e.target.value)}
+              required
+            />
+            <select
+              value={tipoCliente}
+              onChange={(e) => setTipoCliente(e.target.value)}
+              required
+            >
+              <option value="Propietario">Propietario</option>
+              <option value="Inquilino">Inquilino</option>
+              <option value="Comprador">Comprador</option>
+              <option value="Vendedor">Vendedor</option>
+            </select>
             <div className="modal-form-actions">
               <button type="submit" className="btn btn-success">Guardar Cliente</button>
               <button 
                 type="button" 
                 className="btn btn-secondary"
-                onClick={() => setShowForm(false)}
+                onClick={() => { setShowForm(false); resetForm(); }}
               >
                 Cancelar
               </button>
