@@ -9,6 +9,7 @@ export default function Clientes() {
   const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [editingId, setEditingId] = useState(null);
   const [nombre, setNombre] = useState("");
   const [apellido, setApellido] = useState("");
   const [dni, setDni] = useState("");
@@ -17,6 +18,7 @@ export default function Clientes() {
   const [tipoCliente, setTipoCliente] = useState("Propietario");
 
   const resetForm = () => {
+    setEditingId(null);
     setNombre("");
     setApellido("");
     setDni("");
@@ -24,6 +26,33 @@ export default function Clientes() {
     setEmail("");
     setTipoCliente("Propietario");
     setError(null);
+  };
+
+  const handleEdit = (cliente) => {
+    setEditingId(cliente.id);
+    setNombre(cliente.nombre || "");
+    setApellido(cliente.apellido || "");
+    setDni(cliente.dni?.toString() || "");
+    setTelefono(cliente.telefono || "");
+    setEmail(cliente.email || "");
+    setTipoCliente(cliente.tipoCliente || "Propietario");
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("¿Eliminar este cliente?")) return;
+    if (!id) {
+      setError("No se pudo eliminar: ID del cliente no está definido.");
+      return;
+    }
+
+    try {
+      await requestApi(`/Cliente/${id}`, { method: "DELETE" });
+      setClientes(clientes.filter(c => c.id !== id));
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -45,18 +74,34 @@ export default function Clientes() {
         tipoCliente,
       };
 
-      const created = await requestApi("/Cliente", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      if (editingId) {
+        // Actualizar cliente existente
+        await requestApi(`/Cliente/${editingId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingId, ...payload }),
+        });
+        
+        setClientes(clientes.map(c => c.id === editingId ? { ...c, ...payload } : c));
+        alert("Cliente actualizado exitosamente.");
+      } else {
+        // Crear nuevo cliente
+        const created = await requestApi("/Cliente", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
 
-      setClientes((prev) => [created || payload, ...prev]);
+        setClientes((prev) => [created || payload, ...prev]);
+        alert("Cliente creado exitosamente.");
+      }
+
       setShowForm(false);
       resetForm();
     } catch (err) {
       console.error(err);
-      setError(err.message);
+      setError(err.message || "Error al guardar el cliente. Intenta nuevamente.");
+      alert(`❌ Error: ${err.message || "No se pudo guardar el cliente. Verifica los datos e intenta nuevamente."}\n\nEl formulario permanece abierto para que corrijas los cambios.`);
     }
   };
 
@@ -133,8 +178,8 @@ export default function Clientes() {
               ]}
               actions={(
                 <>
-                  <button className="btn-secondary" type="button">Editar</button>
-                  <button className="btn-secondary" type="button">Historial</button>
+                  <button className="btn-secondary" type="button" onClick={() => handleEdit(cliente)}>Editar</button>
+                  <button className="btn-secondary" type="button" onClick={() => handleDelete(cliente.id)}>Eliminar</button>
                 </>
               )}
             />
@@ -154,7 +199,7 @@ export default function Clientes() {
     
       {showForm && (
         <div className="modal-form">
-          <h2>Nuevo Cliente</h2>
+          <h2>{editingId ? "Editar Cliente" : "Nuevo Cliente"}</h2>
           {error && <p style={{color: '#b91c1c'}}>{error}</p>}
           <form onSubmit={handleSubmit}>
             <input
@@ -203,7 +248,7 @@ export default function Clientes() {
               <option value="Vendedor">Vendedor</option>
             </select>
             <div className="modal-form-actions">
-              <button type="submit" className="btn btn-success">Guardar Cliente</button>
+              <button type="submit" className="btn btn-success">{editingId ? "Actualizar Cliente" : "Guardar Cliente"}</button>
               <button 
                 type="button" 
                 className="btn btn-secondary"

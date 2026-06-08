@@ -10,22 +10,72 @@ export default function Contratos() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [propiedades, setPropiedades] = useState([]);
+  const [editingId, setEditingId] = useState(null);
   const [propiedadId, setPropiedadId] = useState("");
   const [precioBase, setPrecioBase] = useState("");
   const [montoFinal, setMontoFinal] = useState("");
   const [fechaInicio, setFechaInicio] = useState("");
   const [fechaFin, setFechaFin] = useState("");
   const [tipoContrato, setTipoContrato] = useState("Venta");
+  const [estado, setEstado] = useState("Activo");
   const [selectedContrato, setSelectedContrato] = useState(null);
 
   const resetForm = () => {
+    setEditingId(null);
     setPropiedadId("");
     setPrecioBase("");
     setMontoFinal("");
     setFechaInicio("");
     setFechaFin("");
     setTipoContrato("Venta");
+    setEstado("Activo");
     setError(null);
+  };
+
+  const handlePropiedadChange = (propId) => {
+    setPropiedadId(propId);
+    
+    // Buscar la propiedad seleccionada
+    const propiedadSeleccionada = propiedades.find(p => p.id === Number(propId));
+    
+    if (propiedadSeleccionada) {
+      // Auto-llenar el precio base con el precio de la propiedad
+      if (propiedadSeleccionada.precio) {
+        setPrecioBase(propiedadSeleccionada.precio.toString());
+      }
+      // Opcional: llenar el monto final con el mismo valor inicial
+      if (propiedadSeleccionada.precio && !montoFinal) {
+        setMontoFinal(propiedadSeleccionada.precio.toString());
+      }
+    }
+  };
+
+  const handleEdit = (contrato) => {
+    setEditingId(contrato.id);
+    setPropiedadId(contrato.propiedadId?.toString() || "");
+    setPrecioBase(contrato.precioBase?.toString() || "");
+    setMontoFinal(contrato.montoFinal?.toString() || "");
+    setFechaInicio(contrato.fechaInicio || "");
+    setFechaFin(contrato.fechaFin || "");
+    setTipoContrato(contrato.tipoContrato || "Venta");
+    setEstado(contrato.estado || "Activo");
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("¿Eliminar este contrato?")) return;
+    if (!id) {
+      setError("No se pudo eliminar: ID del contrato no está definido.");
+      return;
+    }
+
+    try {
+      await requestApi(`/Contrato/${id}`, { method: "DELETE" });
+      setContratos(contratos.filter(c => c.id !== id));
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+    }
   };
 
   const formatPrice = (value) => {
@@ -57,6 +107,20 @@ export default function Contratos() {
       return;
     }
 
+    // Validar fechas
+    const inicio = new Date(fechaInicio);
+    const fin = new Date(fechaFin);
+
+    if (inicio > fin) {
+      setError("La fecha de inicio no puede ser posterior a la fecha de finalización.");
+      return;
+    }
+
+    if (fin < inicio) {
+      setError("La fecha de finalización no puede ser anterior a la fecha de inicio.");
+      return;
+    }
+
     try {
       const payload = {
         propiedadId: Number(propiedadId),
@@ -65,20 +129,39 @@ export default function Contratos() {
         fechaInicio,
         fechaFin,
         tipoContrato,
+        estado,
       };
 
-      const created = await requestApi("/Contrato", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      if (editingId) {
+        // Actualizar contrato existente
+        await requestApi(`/Contrato/${editingId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingId, ...payload }),
+        });
 
-      setContratos((prev) => [created || payload, ...prev]);
+        setContratos(contratos.map(c => c.id === editingId ? { ...c, ...payload } : c));
+        alert("Contrato actualizado exitosamente.");
+      } else {
+        // Crear nuevo contrato
+        const created = await requestApi("/Contrato", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        setContratos((prev) => [created || payload, ...prev]);
+        alert("Contrato creado exitosamente.");
+      }
+
       setShowForm(false);
       resetForm();
     } catch (err) {
       console.error(err);
-      setError(err.message);
+      setError(err.message || "Error al guardar el contrato. Intenta nuevamente.");
+      alert(`❌ Error: ${err.message || "No se pudo guardar el contrato. Verifica los datos e intenta nuevamente."}
+
+El formulario permanece abierto para que corrijas los cambios.`);
     }
   };
 
@@ -164,6 +247,12 @@ export default function Contratos() {
               key={contrato.id}
               title={`Contrato #${contrato.id || "-"}`}
               subtitle={contrato.tituloPropiedad || `Propiedad ${contrato.propiedadId || "-"}`}
+              status={contrato.estado || "Activo"}
+              statusClass={
+                contrato.estado === "Activo" ? "status-active" : 
+                contrato.estado === "Finalizado" ? "status-expired" : 
+                "status-canceled"
+              }
               details={[
                 { label: "Tipo", value: contrato.tipoContrato },
                 { label: "Precio Base", value: formatPrice(contrato.precioBase) },
@@ -176,6 +265,8 @@ export default function Contratos() {
                   <button className="btn-secondary" type="button" onClick={() => handleOpenContrato(contrato)}>
                     Ver
                   </button>
+                  <button className="btn-secondary" type="button" onClick={() => handleEdit(contrato)}>Editar</button>
+                  <button className="btn-secondary" type="button" onClick={() => handleDelete(contrato.id)}>Eliminar</button>
                 </>
               )}
             />
@@ -207,6 +298,10 @@ export default function Contratos() {
               <span className="admin-item-value">{selectedContrato.tipoContrato}</span>
             </div>
             <div className="admin-item-row">
+              <span className="admin-item-label">Estado</span>
+              <span className="admin-item-value">{selectedContrato.estado || "Activo"}</span>
+            </div>
+            <div className="admin-item-row">
               <span className="admin-item-label">Precio Base</span>
               <span className="admin-item-value">{formatPrice(selectedContrato.precioBase)}</span>
             </div>
@@ -234,12 +329,12 @@ export default function Contratos() {
       {/* Modal flotante */}
       {showForm && (
         <div className="modal-form">
-          <h2>Nuevo Contrato</h2>
+          <h2>{editingId ? "Editar Contrato" : "Nuevo Contrato"}</h2>
           {error && <p style={{color: '#b91c1c'}}>{error}</p>}
           <form onSubmit={handleSubmit}>
             <select
               value={propiedadId}
-              onChange={(e) => setPropiedadId(e.target.value)}
+              onChange={(e) => handlePropiedadChange(e.target.value)}
               required
             >
               <option value="">Seleccionar propiedad...</option>
@@ -271,6 +366,7 @@ export default function Contratos() {
                 type="date"
                 value={fechaInicio}
                 onChange={(e) => setFechaInicio(e.target.value)}
+                max={fechaFin}
                 required
               />
             </div>
@@ -280,6 +376,7 @@ export default function Contratos() {
                 type="date"
                 value={fechaFin}
                 onChange={(e) => setFechaFin(e.target.value)}
+                min={fechaInicio}
                 required
               />
             </div>
@@ -292,8 +389,17 @@ export default function Contratos() {
               <option value="Alquiler">Alquiler</option>
               <option value="Temporal">Temporal</option>
             </select>
+            <select
+              value={estado}
+              onChange={(e) => setEstado(e.target.value)}
+              required
+            >
+              <option value="Activo">Activo</option>
+              <option value="Finalizado">Finalizado</option>
+              <option value="Cancelado">Cancelado</option>
+            </select>
             <div className="modal-form-actions">
-              <button type="submit" className="btn btn-success">Generar Contrato</button>
+              <button type="submit" className="btn btn-success">{editingId ? "Actualizar Contrato" : "Generar Contrato"}</button>
               <button 
                 type="button" 
                 className="btn btn-secondary"
