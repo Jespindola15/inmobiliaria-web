@@ -9,11 +9,16 @@ function Card({
   ciudad = "",
   metrosCuadrados = null,
   operacion = "",
-  precio = "Consultar",
+  precioUSD = 0,
+  exchangeRate = 900,
   descripcion = "Sin descripción disponible.",
 }) {
   const ubicacion = ciudad ? `${direccion}, ${ciudad}` : direccion;
   const metrosText = metrosCuadrados ? `${metrosCuadrados} m²` : null;
+  const precioARS = precioUSD ? Math.round(precioUSD * exchangeRate) : null;
+  const precioText = precioUSD
+    ? `USD ${precioUSD.toLocaleString('es-AR')} / $${precioARS.toLocaleString('es-AR')}`
+    : "Consultar";
 
   return (
     <div className="card">
@@ -34,7 +39,7 @@ function Card({
           {operacion && metrosText && <span> · </span>}
           {metrosText}
         </p>
-        <h4 className="card-price">{precio}</h4>
+        <h4 className="card-price">{precioText}</h4>
         <p className="card-description">{descripcion}</p>
         <button>Consultar</button>
       </div>

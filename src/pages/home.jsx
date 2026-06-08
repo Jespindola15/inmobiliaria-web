@@ -28,9 +28,12 @@ function Home() {
     try {
       setLoading(true);
       const data = await fetchApi("/Propiedades");
-      setPropiedades(
-        Array.isArray(data) ? data.map(normalizeProperty) : []
-      );
+      const disponibles = Array.isArray(data)
+        ? data
+            .filter((p) => p.estado === "Disponible")
+            .map(normalizeProperty)
+        : [];
+      setPropiedades(disponibles);
       setError(null);
     } catch (err) {
       console.error("Error cargando propiedades en Home:", err);

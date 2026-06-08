@@ -60,6 +60,26 @@
   line-height: 1.7;
 }
 
+.card-title {
+  font-size: 22px;
+  margin: 0;
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.card-meta {
+  color: #64748b;
+  font-size: 13px;
+  margin: 8px 0;
+}
+
+.card-price {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2563eb;
+  margin: 10px 0;
+}
+
 .card-body button {
   margin-top: 22px;
   padding: 14px 22px;
