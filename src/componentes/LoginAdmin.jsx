@@ -1,25 +1,39 @@
 import { useState } from "react";
+import { decrypt } from "../utils/encryptionUtils";
 import "./LoginAdmin.css";
+
+// Credenciales encriptadas (mismo valor que en public/config/credentials.json)
+const ENCRYPTED_CREDENTIALS = {
+  usuario: "U2FsdGVkX18fyfIWM5yLkK6/KBrjaI1y65gJY09hoew=",
+  contraseña: "U2FsdGVkX1/M91uCDH+NmQyKMcFA5g1d6XkN/ca+Nhw="
+};
 
 export default function LoginAdmin({ onLoginSuccess, onCancel }) {
   const [usuario, setUsuario] = useState("");
   const [contraseña, setContraseña] = useState("");
   const [error, setError] = useState("");
 
-  const ADMIN_USER = "Admin123";
-  const ADMIN_PASSWORD = "Entrar123";
-
   const handleSubmit = (e) => {
     e.preventDefault();
     setError("");
 
-    if (usuario === ADMIN_USER && contraseña === ADMIN_PASSWORD) {
-      onLoginSuccess();
-      setUsuario("");
-      setContraseña("");
-    } else {
-      setError("Usuario o contraseña incorrectos");
-      setContraseña("");
+    try {
+      // Desencriptar las credenciales almacenadas
+      const adminUser = decrypt(ENCRYPTED_CREDENTIALS.usuario);
+      const adminPassword = decrypt(ENCRYPTED_CREDENTIALS.contraseña);
+
+      // Comparar con las ingresadas
+      if (usuario === adminUser && contraseña === adminPassword) {
+        onLoginSuccess();
+        setUsuario("");
+        setContraseña("");
+      } else {
+        setError("Usuario o contraseña incorrectos");
+        setContraseña("");
+      }
+    } catch (err) {
+      console.error("Error al desencriptar:", err);
+      setError("Error al validar credenciales");
     }
   };
 
