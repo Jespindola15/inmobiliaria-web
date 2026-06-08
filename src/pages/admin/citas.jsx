@@ -8,9 +8,9 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 moment.locale('es');
 const localizer = momentLocalizer(moment);
 
-export default function Citas() {
+export default function Citas({ events: propsEvents, setEvents: propsSetEvents }) {
   const [showForm, setShowForm] = useState(false);
-  const [events, setEvents] = useState([
+  const [internalEvents, setInternalEvents] = useState([
     {
       id: 1,
       title: 'Visita: Juan Pérez - Depto Centro',
@@ -19,13 +19,15 @@ export default function Citas() {
       desc: 'Interesado en alquiler de 2 ambientes',
     }
   ]);
-
   const [newEvento, setNewEvento] = useState({
     title: '',
     date: '',
     time: '',
     desc: ''
   });
+
+  const events = propsEvents ?? internalEvents;
+  const setEventsFn = propsSetEvents ?? setInternalEvents;
 
   const handleSelectSlot = useCallback(({ start }) => {
     const dateStr = moment(start).format('YYYY-MM-DD');
@@ -47,7 +49,7 @@ export default function Citas() {
       desc: newEvento.desc
     };
 
-    setEvents([...events, nuevo]);
+    setEventsFn([...events, nuevo]);
     setShowForm(false);
     setNewEvento({ title: '', date: '', time: '', desc: '' });
   };

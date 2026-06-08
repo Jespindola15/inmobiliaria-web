@@ -25,8 +25,34 @@ const pageComponents = {
   propiedades: Propiedades,
 };
 
+const today = new Date();
+const initialEvents = [
+  {
+    id: 1,
+    title: 'Visita: Juan Pérez - Depto Centro',
+    start: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 10, 0),
+    end: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 11, 30),
+    desc: 'Interesado en alquiler de 2 ambientes',
+  },
+  {
+    id: 2,
+    title: 'Cita: María Gómez - Oficina Norte',
+    start: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 12, 30),
+    end: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 13, 30),
+    desc: 'Revisión de contrato de venta',
+  },
+  {
+    id: 3,
+    title: 'Visita: Carlos Ramírez - Casa Sur',
+    start: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 16, 0),
+    end: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 17, 0),
+    desc: 'Mostrar propiedad y cierre de oferta',
+  },
+];
+
 export default function AdminPanel({ initialSection = "dashboard", onClose, darkMode, onToggleDarkMode }) {
   const [section, setSection] = useState(initialSection);
+  const [events, setEvents] = useState(initialEvents);
   const SectionComponent = pageComponents[section] || Dashboard;
 
   return (
@@ -75,7 +101,11 @@ export default function AdminPanel({ initialSection = "dashboard", onClose, dark
         </header>
 
         <main className="admin-panel-content">
-          <SectionComponent />
+          <SectionComponent
+            events={events}
+            setEvents={setEvents}
+            onNavigateToCitas={() => setSection("citas")}
+          />
         </main>
       </div>
     </div>
