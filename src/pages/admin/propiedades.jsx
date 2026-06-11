@@ -184,7 +184,7 @@ export default function Propiedades() {
               <Card 
                 tipo={p.tipo}
                 estado={p.estado}
-                imagen={p.imagen ?? p.imagenes?.[0] ?? "https://picsum.photos/500/320"}
+                imagen={p.imagenes?.[0].url}
                 titulo={p.titulo}
                 direccion={p.direccion}
                 ciudad={p.ciudad}
@@ -202,7 +202,7 @@ export default function Propiedades() {
                   type="button"
                   title="Editar"
                 >
-                  ✏️ Editar
+                  Editar
                 </button>
                 <button
                   className="action-btn"
@@ -211,7 +211,7 @@ export default function Propiedades() {
                   type="button"
                   title="Eliminar"
                 >
-                  🗑️ Borrar
+                  Borrar
                 </button>
               </div>
             </div>

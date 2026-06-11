@@ -701,7 +701,7 @@
   }
 }
 
-/* --- Estilos Calendario (React Big Calendar) --- */
+/* Estilos Calendario*/
 
 .calendar-container {
   background: white;
@@ -774,7 +774,7 @@
   border-left: 1px solid #e5e7eb !important;
 }
 
-/* Dark Mode Styles for Admin Panel */
+/* Modo oscuro */
 .admin-page.dark {
   background: #1a222f;
   color: #e2e8f0;
