@@ -115,7 +115,7 @@ body.dark .nav-link-button-theme {
   
 }
 
-/* Dark Mode Navbar Styles */
+/* Dark Mode Navbar */
 body.dark .navbar {
   background: rgba(15, 23, 42, 0.98);
   border-bottom-color: rgba(51, 65, 85, 0.5);
@@ -158,4 +158,83 @@ body.dark .nav-link-button-theme:hover {
 
 body.dark .brand {
   color: #e2e8f0;
+}
+
+.hamburger {
+  display: none;
+  background: transparent;
+  border: none;
+  font-size: 30px;
+  cursor: pointer;
+}
+
+body.dark .hamburger {
+  color: #fafafa;
+}
+
+@media (max-width: 768px) {
+
+  .navbar {
+    padding: 10px 16px;
+  }
+
+  .nav-content {
+    padding: 0;
+    gap: 10px;
+  }
+
+  .hamburger {
+    display: block;
+  }
+
+  .nav-links {
+    display: none;
+  }
+
+  .nav-links.active {
+    display: flex;
+    flex-direction: column;
+    border-radius: 20px;
+    position: absolute;
+    top: 90px;
+    left: 0;
+    width: 100%;
+    background-color: #fafafa;
+    padding: 20px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, .1);
+    gap: 16px;
+  }
+
+  body.dark .nav-links.active {
+    background-color: #1e293b;
+    box-shadow: 0 10px 20px rgba(255, 255, 255, .1);
+  }
+
+ .desktop-buttons {
+   display: flex;
+ }
+
+ .nav-links.active .nav-link-button-theme,
+ .nav-links.active .nav-link-button-admin,
+ .nav-links.active .btn-primary {
+   width: 100%;
+ }
+
+  .nav-links.active a,
+  .nav-links.active button {
+    width: 100%;
+  }
+
+  .nav-buttons {
+    display: none;
+  }
+
+  .brand {
+    font-size: 20px;
+  }
+
+  .brand-mark {
+    width: 35px;
+    height: 35px;
+  }
 }
