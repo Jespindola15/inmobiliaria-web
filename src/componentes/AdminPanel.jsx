@@ -53,11 +53,12 @@ const initialEvents = [
 export default function AdminPanel({ initialSection = "dashboard", onClose, darkMode, onToggleDarkMode }) {
   const [section, setSection] = useState(initialSection);
   const [events, setEvents] = useState(initialEvents);
+  const [menuOpen, setMenuOpen] = useState(false);
   const SectionComponent = pageComponents[section] || Dashboard;
 
   return (
     <div className={`admin-page admin-panel ${darkMode ? "dark" : ""}`}>
-      <aside className="admin-sidebar">
+      <aside className={`admin-sidebar ${menuOpen ? "sidebar-open" : ""}`}>
         <div className="sidebar-brand">
           <span className="sidebar-logo">G</span>
           <div>
@@ -72,7 +73,10 @@ export default function AdminPanel({ initialSection = "dashboard", onClose, dark
               key={page.key}
               type="button"
               className={`sidebar-link ${section === page.key ? "active" : ""}`}
-              onClick={() => setSection(page.key)}
+              onClick={() => {
+                setSection(page.key);
+                setMenuOpen(false);
+              }}
             >
               {page.label}
             </button>
@@ -80,8 +84,19 @@ export default function AdminPanel({ initialSection = "dashboard", onClose, dark
         </nav>
       </aside>
 
+      {menuOpen && <div className="sidebar-backdrop" onClick={() => setMenuOpen(false)} />}
+
       <div className="admin-panel-main">
         <header className="admin-panel-top">
+          <button
+            type="button"
+            className="sidebar-toggle-btn"
+            onClick={() => setMenuOpen((prev) => !prev)}
+            aria-label="Abrir menú"
+            aria-expanded={menuOpen}
+          >
+            ☰
+          </button>
           <div>
             <p className="admin-panel-tag">Panel interno</p>
             <h1>{pages.find((page) => page.key === section)?.label || "Dashboard"}</h1>
