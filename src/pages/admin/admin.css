@@ -1035,3 +1035,88 @@
   font-weight: 600;
   font-size: 0.9rem;
 }
+
+@media (max-width: 768px) {
+
+  .admin-page {
+    flex-direction: column;
+  }
+
+  .admin-sidebar {
+    width: 100%;
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .sidebar-brand {
+    justify-content: center;
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 10px;
+    padding-bottom: 5px;
+  }
+
+  .sidebar-link {
+    white-space: nowrap;
+    min-width: fit-content;
+  }
+
+  .admin-panel-main {
+    padding: 16px;
+  }
+
+  .admin-panel-top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-panel-buttons {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .admin-panel-buttons button {
+    width: 100%;
+  }
+
+  .dashboard-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-form-actions {
+    flex-direction: column;
+  }
+
+  .modal-form-actions button {
+    width: 100%;
+  }
+
+  .admin-item-main {
+    flex-direction: column;
+  }
+
+  .admin-item-actions {
+    flex-direction: column;
+  }
+
+  .admin-item-actions button {
+    width: 100%;
+  }
+
+  .fab-button {
+    right: 16px;
+    bottom: 16px;
+  }
+
+}
