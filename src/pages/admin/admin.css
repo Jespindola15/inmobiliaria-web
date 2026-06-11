@@ -464,7 +464,7 @@
   background: #e5e7eb;
 }
 
-/* --- Nuevos Estilos de Administración --- */
+/*Nuevos Estilos de Administración*/
 
 .admin-stats-grid {
   display: grid;
@@ -612,7 +612,7 @@
 
 .action-btn:hover {
   background: #f3f4f6;
-  color: #111827;
+  color: #111827; 
 }
 
 .admin-item-card {
@@ -646,7 +646,7 @@
   font-size: 0.95rem;
 }
 
-.admin-item-fields {
+.admin-item-fields { 
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: 12px;
