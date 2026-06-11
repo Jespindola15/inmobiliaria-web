@@ -172,10 +172,13 @@ body.dark .hamburger {
   color: #fafafa;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
+
+
 
   .navbar {
-    padding: 10px 16px;
+    padding-right: 110px;
+    
   }
 
   .nav-content {
