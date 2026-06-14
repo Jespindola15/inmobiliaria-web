@@ -24,7 +24,7 @@ function Card({
     <div className="card">
       <div className="card-badges">
         <span className="badge property-type">{tipo}</span>
-        <span className={`badge status ${estado.toLowerCase() === 'disponible' ? '' : 'unavailable'}`}>
+        <span className={`badge status ${estado?.toLowerCase?.() === 'disponible' ? '' : 'unavailable'}`}>
           {estado}
         </span>
       </div>
