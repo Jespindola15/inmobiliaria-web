@@ -1,7 +1,15 @@
 import CryptoJS from 'crypto-js';
 
-// Clave de encriptación (debe ser compleja y única para tu aplicación)
-const ENCRYPTION_KEY = "inmobiliaria_app_secret_key_2024_secure";
+const ENCRYPTION_KEY = import.meta.env.VITE_ENCRYPTION_KEY;
+
+const getEncryptionKey = () => {
+  if (!ENCRYPTION_KEY) {
+    throw new Error(
+      "La variable de entorno VITE_ENCRYPTION_KEY no está definida. Agrega un .env con VITE_ENCRYPTION_KEY."
+    );
+  }
+  return ENCRYPTION_KEY;
+};
 
 /**
  * Encripta un texto
@@ -9,8 +17,8 @@ const ENCRYPTION_KEY = "inmobiliaria_app_secret_key_2024_secure";
  * @returns {string} - Texto encriptado en base64
  */
 export const encrypt = (text) => {
-  const encrypted = CryptoJS.AES.encrypt(text, ENCRYPTION_KEY).toString();
-  return encrypted;
+  const key = getEncryptionKey();
+  return CryptoJS.AES.encrypt(text, key).toString();
 };
 
 /**
@@ -19,6 +27,6 @@ export const encrypt = (text) => {
  * @returns {string} - Texto desencriptado
  */
 export const decrypt = (encryptedText) => {
-  const decrypted = CryptoJS.AES.decrypt(encryptedText, ENCRYPTION_KEY).toString(CryptoJS.enc.Utf8);
-  return decrypted;
+  const key = getEncryptionKey();
+  return CryptoJS.AES.decrypt(encryptedText, key).toString(CryptoJS.enc.Utf8);
 };
