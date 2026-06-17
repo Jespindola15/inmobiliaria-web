@@ -145,12 +145,12 @@ export default function Propiedades() {
     }
   };
 
-  const filteredPropiedades = (propiedades || []).filter((p) =>
-    p.ubicacion?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.tipo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.ciudad?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.direccion?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredPropiedades = (propiedades || []).filter((p) => {
+    const term = searchTerm.toLowerCase();
+    return [p.ubicacion, p.tipo, p.ciudad, p.direccion].some((value) =>
+      value?.toLowerCase().includes(term)
+    );
+  });
 
   if (loading) return <div className="admin-section">Cargando propiedades...</div>;
   if (error) return <div className="admin-section">Error: {error}</div>;
@@ -184,7 +184,7 @@ export default function Propiedades() {
               <Card 
                 tipo={p.tipo}
                 estado={p.estado}
-                imagen={p.imagenes?.[0].url}
+                imagen={p.imagenes?.[0]?.url}
                 titulo={p.titulo}
                 direccion={p.direccion}
                 ciudad={p.ciudad}
