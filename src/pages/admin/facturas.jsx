@@ -1,167 +1,229 @@
 import "./admin.css";
-import { useState, useEffect } from "react";
+import { useMemo, useReducer, useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import AdminCard from "../../componentes/AdminCard";
 import { fetchApi, requestApi } from "../../api";
 
+const initialState = {
+  showForm: false,
+  searchTerm: "",
+  clienteId: "",
+  nroFactura: "",
+  importe: "",
+  fechaEmision: "",
+  fechaVencimiento: "",
+  tipoFactura: "B",
+  operacion: "Venta",
+  estado: "Pendiente",
+  selectedFactura: null,
+  statusUpdate: "Pendiente",
+  error: null,
+};
+
+function reducer(state, action) {
+  switch (action.type) {
+    case "SET_FIELD":
+      return { ...state, [action.field]: action.value };
+    case "OPEN_FORM":
+      return { ...state, showForm: true, error: null };
+    case "CLOSE_FORM":
+      return { ...state, showForm: false, error: null };
+    case "RESET_FORM":
+      return {
+        ...state,
+        clienteId: "",
+        nroFactura: "",
+        importe: "",
+        fechaEmision: "",
+        fechaVencimiento: "",
+        tipoFactura: "B",
+        operacion: "Venta",
+        estado: "Pendiente",
+        error: null,
+      };
+    case "SET_SELECTED_FACTURA":
+      return {
+        ...state,
+        selectedFactura: action.payload,
+        statusUpdate: action.payload?.estado || "Pendiente",
+        error: null,
+      };
+    case "CLEAR_SELECTED_FACTURA":
+      return { ...state, selectedFactura: null, statusUpdate: "Pendiente", error: null };
+    case "SET_ERROR":
+      return { ...state, error: action.payload };
+    case "CLEAR_ERROR":
+      return { ...state, error: null };
+    default:
+      return state;
+  }
+}
+
 export default function Facturas() {
-  const [showForm, setShowForm] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [facturas, setFacturas] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [clientes, setClientes] = useState([]);
-  const [clienteId, setClienteId] = useState("");
-  const [nroFactura, setNroFactura] = useState("");
-  const [importe, setImporte] = useState("");
-  const [fechaEmision, setFechaEmision] = useState("");
-  const [fechaVencimiento, setFechaVencimiento] = useState("");
-  const [tipoFactura, setTipoFactura] = useState("B");
-  const [operacion, setOperacion] = useState("Venta");
-  const [estado, setEstado] = useState("Pendiente");
-  const [selectedFactura, setSelectedFactura] = useState(null);
-  const [statusUpdate, setStatusUpdate] = useState("");
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const queryClient = useQueryClient();
 
-  const resetForm = () => {
-    setClienteId("");
-    setNroFactura("");
-    setImporte("");
-    setFechaEmision("");
-    setFechaVencimiento("");
-    setTipoFactura("B");
-    setOperacion("Venta");
-    setEstado("Pendiente");
-    setError(null);
-  };
+  const {
+    data: facturas = [],
+    isLoading: facturasLoading,
+    isError: facturasError,
+    error: facturasQueryError,
+  } = useQuery({
+    queryKey: ["facturas"],
+    queryFn: () => fetchApi("/Factura"),
+    staleTime: 1000 * 60,
+    retry: 1,
+  });
 
-  const formatPrice = (value) => {
-    if (value == null || value === "") return "-";
-    return `$${Number(value).toLocaleString("es-AR", { minimumFractionDigits: 0 })}`;
-  };
+  const {
+    data: clientes = [],
+    isLoading: clientesLoading,
+    isError: clientesError,
+    error: clientesQueryError,
+  } = useQuery({
+    queryKey: ["clientes"],
+    queryFn: () => fetchApi("/Cliente"),
+    staleTime: 1000 * 60,
+    retry: 1,
+  });
 
-  const formatDate = (value) => {
-    if (!value) return "-";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return value;
-    return date.toLocaleDateString("es-AR");
-  };
+  const saveFacturaMutation = useMutation({
+    mutationFn: async (payload) =>
+      requestApi("/Factura", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries(["facturas"]);
+      dispatch({ type: "CLOSE_FORM" });
+      dispatch({ type: "RESET_FORM" });
+      window.alert("Factura creada exitosamente.");
+    },
+    onError: (err) => {
+      dispatch({ type: "SET_ERROR", payload: err.message || "Error al crear la factura." });
+    },
+  });
 
-  useEffect(() => {
-    if (selectedFactura) {
-      setStatusUpdate(selectedFactura.estado || "Pendiente");
-    }
-  }, [selectedFactura]);
+  const updateFacturaMutation = useMutation({
+    mutationFn: async ({ id, payload }) =>
+      requestApi(`/Factura/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }),
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries(["facturas"]);
+      dispatch({ type: "SET_SELECTED_FACTURA", payload: data });
+      window.alert("Estado de factura actualizado.");
+    },
+    onError: (err) => {
+      dispatch({ type: "SET_ERROR", payload: err.message || "Error al actualizar el estado." });
+    },
+  });
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null);
+  const resetForm = useCallback(() => {
+    dispatch({ type: "RESET_FORM" });
+    dispatch({ type: "CLEAR_ERROR" });
+  }, []);
 
-    if (!clienteId || !nroFactura || !importe || !fechaEmision || !fechaVencimiento || !tipoFactura || !operacion || !estado) {
-      setError("Completa todos los campos de la factura.");
-      return;
-    }
+  const handleSubmit = useCallback(
+    async (event) => {
+      event.preventDefault();
+      dispatch({ type: "CLEAR_ERROR" });
 
-    try {
-      const payload = {
-        clienteId: Number(clienteId),
+      const {
+        clienteId,
         nroFactura,
+        importe,
+        fechaEmision,
+        fechaVencimiento,
+        tipoFactura,
+        operacion,
+        estado,
+      } = state;
+
+      if (!clienteId || !nroFactura || !importe || !fechaEmision || !fechaVencimiento || !tipoFactura || !operacion || !estado) {
+        dispatch({ type: "SET_ERROR", payload: "Completa todos los campos de la factura." });
+        return;
+      }
+
+      await saveFacturaMutation.mutateAsync({
+        clienteId: Number(clienteId),
+        nroFactura: nroFactura.toString(),
         importe: Number(importe),
         fechaEmision,
         fechaVencimiento,
         tipoFactura,
         operacion,
         estado,
-      };
-
-      const created = await requestApi("/Factura", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
       });
+    },
+    [saveFacturaMutation, state]
+  );
 
-      const cliente = clientes.find((c) => c.id === Number(clienteId));
-      const createdWithName = {
-        ...(created || payload),
-        clienteNombre: created?.clienteNombre || `${cliente?.nombre || ""} ${cliente?.apellido || ""}`.trim(),
-      };
-
-      setFacturas((prev) => [createdWithName, ...prev]);
-      setShowForm(false);
-      resetForm();
-    } catch (err) {
-      console.error(err);
-      setError(err.message);
-    }
-  };
-
-  const handleOpenFactura = (factura) => {
-    setSelectedFactura(factura);
-  };
-
-  const handleCloseFactura = () => {
-    setSelectedFactura(null);
-    setStatusUpdate("");
-  };
-
-  const handleUpdateStatus = async () => {
-    if (!selectedFactura) return;
-
-    try {
-      const updatedPayload = {
-        ...selectedFactura,
-        estado: statusUpdate,
-      };
-
-      const saved = await requestApi(`/Factura/${selectedFactura.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedPayload),
-      });
-
-      setFacturas((prev) => prev.map((f) => (f.id === selectedFactura.id ? saved : f)));
-      setSelectedFactura(saved);
-    } catch (err) {
-      console.error(err);
-      setError(err.message);
-    }
-  };
-
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const [facturasData, clientesData] = await Promise.all([
-          fetchApi("/Factura"),
-          fetchApi("/Cliente"),
-        ]);
-        setFacturas(facturasData);
-        setClientes(clientesData);
-      } catch (err) {
-        console.error(err);
-        setError(err.message);
-        setFacturas([]);
-        setClientes([]);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadData();
+  const handleOpenFactura = useCallback((factura) => {
+    dispatch({ type: "SET_SELECTED_FACTURA", payload: factura });
   }, []);
 
-  const recaudacionMes = facturas.filter((f) => f.estado === "Pagada").reduce((sum, f) => sum + Number(f.importe || 0), 0);
-  const pendienteCobro = facturas.filter((f) => f.estado === "Pendiente").reduce((sum, f) => sum + Number(f.importe || 0), 0);
-  const facturasVencidas = facturas.filter((f) => f.estado === "Vencida").length;
+  const handleCloseFactura = useCallback(() => {
+    dispatch({ type: "CLEAR_SELECTED_FACTURA" });
+  }, []);
 
-  const filteredFacturas = (facturas || []).filter((factura) => {
-    const clienteTexto = String(factura.clienteNombre || factura.cliente || factura.clienteId || "").toLowerCase();
-    const facturaTexto = String(factura.nroFactura || factura.id || "").toLowerCase();
-    return (
-      clienteTexto.includes(searchTerm.toLowerCase()) ||
-      facturaTexto.includes(searchTerm.toLowerCase())
-    );
-  });
+  const handleUpdateStatus = useCallback(async () => {
+    if (!state.selectedFactura) return;
+    await updateFacturaMutation.mutateAsync({
+      id: state.selectedFactura.id,
+      payload: { ...state.selectedFactura, estado: state.statusUpdate },
+    });
+  }, [state.selectedFactura, state.statusUpdate, updateFacturaMutation]);
 
-  if (loading) return <div className="admin-section">Cargando facturas...</div>;
-  if (error) return <div className="admin-section">Error: {error}</div>;
+  const filteredFacturas = useMemo(() => {
+    const term = state.searchTerm.trim().toLowerCase();
+    return facturas.filter((factura) => {
+      const clienteTexto = String(factura.clienteNombre || factura.cliente || factura.clienteId || "").toLowerCase();
+      const facturaTexto = String(factura.nroFactura || factura.id || "").toLowerCase();
+      return clienteTexto.includes(term) || facturaTexto.includes(term);
+    });
+  }, [facturas, state.searchTerm]);
+
+  const recaudacionMes = useMemo(
+    () => facturas.filter((f) => f.estado === "Pagada").reduce((sum, f) => sum + Number(f.importe || 0), 0),
+    [facturas]
+  );
+
+  const pendienteCobro = useMemo(
+    () => facturas.filter((f) => f.estado === "Pendiente").reduce((sum, f) => sum + Number(f.importe || 0), 0),
+    [facturas]
+  );
+
+  const facturasVencidas = useMemo(
+    () => facturas.filter((f) => f.estado === "Vencida").length,
+    [facturas]
+  );
+
+  const displayedError = state.error || ((facturasError || clientesError) ? (facturasQueryError?.message || clientesQueryError?.message) : null);
+  const isLoading = facturasLoading || clientesLoading;
+
+  const formatPrice = useCallback((value) => {
+    if (value == null || value === "") return "-";
+    return `$${Number(value).toLocaleString("es-AR", { minimumFractionDigits: 0 })}`;
+  }, []);
+
+  const formatDate = useCallback((value) => {
+    if (!value) return "-";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value;
+    return date.toLocaleDateString("es-AR");
+  }, []);
+
+  const modalOverlayClick = useCallback(() => {
+    dispatch({ type: "CLOSE_FORM" });
+    dispatch({ type: "CLEAR_SELECTED_FACTURA" });
+  }, []);
+
+  if (isLoading) return <div className="admin-section">Cargando facturas...</div>;
+  if ((facturasError || clientesError) && !facturas.length) return <div className="admin-section">Error: {displayedError}</div>;
 
   return (
     <div className="admin-section">
@@ -183,15 +245,15 @@ export default function Facturas() {
       <div className="admin-actions-bar">
         <div className="search-container">
           <span className="search-icon">🔍</span>
-          <input 
-            type="text" 
-            className="search-input" 
-            placeholder="Buscar por cliente o N° de factura..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Buscar por cliente o N° de factura..."
+            value={state.searchTerm}
+            onChange={(e) => dispatch({ type: "SET_FIELD", field: "searchTerm", value: e.target.value })}
           />
         </div>
-        <button className="btn btn-success" onClick={() => setShowForm(true)}>
+        <button className="btn btn-success" onClick={() => dispatch({ type: "OPEN_FORM" })}>
           + Crear Factura
         </button>
       </div>
@@ -234,55 +296,49 @@ export default function Facturas() {
             );
           })
         ) : (
-          <div style={{width: '100%', textAlign: 'center', padding: '40px', background: 'white', borderRadius: '16px'}}>
+          <div style={{ width: "100%", textAlign: "center", padding: "40px", background: "white", borderRadius: "16px" }}>
             No se encontraron facturas.
           </div>
         )}
       </div>
 
-      {/* Overlay oscuro */}
-      {(showForm || selectedFactura) && (
-        <div className="modal-overlay" onClick={() => {
-          if (showForm) setShowForm(false);
-          if (selectedFactura) handleCloseFactura();
-        }}></div>
-      )}
+      {(state.showForm || state.selectedFactura) && <div className="modal-overlay" onClick={modalOverlayClick}></div>}
 
-      {selectedFactura && (
+      {state.selectedFactura && (
         <div className="modal-form">
-          <h2>Factura {selectedFactura.nroFactura || selectedFactura.id}</h2>
-          {error && <p style={{ color: '#b91c1c' }}>{error}</p>}
-          <div className="admin-item-fields" style={{ marginBottom: '16px' }}>
+          <h2>Factura {state.selectedFactura.nroFactura || state.selectedFactura.id}</h2>
+          {displayedError && <p style={{ color: "#b91c1c" }}>{displayedError}</p>}
+          <div className="admin-item-fields" style={{ marginBottom: "16px" }}>
             <div className="admin-item-row">
               <span className="admin-item-label">Cliente</span>
-              <span className="admin-item-value">{selectedFactura.clienteNombre || `ID ${selectedFactura.clienteId}`}</span>
+              <span className="admin-item-value">{state.selectedFactura.clienteNombre || `ID ${state.selectedFactura.clienteId}`}</span>
             </div>
             <div className="admin-item-row">
               <span className="admin-item-label">Tipo</span>
-              <span className="admin-item-value">{selectedFactura.tipoFactura}</span>
+              <span className="admin-item-value">{state.selectedFactura.tipoFactura}</span>
             </div>
             <div className="admin-item-row">
               <span className="admin-item-label">Operación</span>
-              <span className="admin-item-value">{selectedFactura.operacion}</span>
+              <span className="admin-item-value">{state.selectedFactura.operacion}</span>
             </div>
             <div className="admin-item-row">
               <span className="admin-item-label">Importe</span>
-              <span className="admin-item-value">{formatPrice(selectedFactura.importe)}</span>
+              <span className="admin-item-value">{formatPrice(state.selectedFactura.importe)}</span>
             </div>
             <div className="admin-item-row">
               <span className="admin-item-label">Emisión</span>
-              <span className="admin-item-value">{formatDate(selectedFactura.fechaEmision)}</span>
+              <span className="admin-item-value">{formatDate(state.selectedFactura.fechaEmision)}</span>
             </div>
             <div className="admin-item-row">
               <span className="admin-item-label">Vencimiento</span>
-              <span className="admin-item-value">{formatDate(selectedFactura.fechaVencimiento)}</span>
+              <span className="admin-item-value">{formatDate(state.selectedFactura.fechaVencimiento)}</span>
             </div>
           </div>
-          <label style={{ marginBottom: '8px', display: 'block', fontWeight: 600 }}>Estado</label>
+          <label style={{ marginBottom: "8px", display: "block", fontWeight: 600 }}>Estado</label>
           <select
-            value={statusUpdate}
-            onChange={(e) => setStatusUpdate(e.target.value)}
-            style={{ marginBottom: '18px' }}
+            value={state.statusUpdate}
+            onChange={(e) => dispatch({ type: "SET_FIELD", field: "statusUpdate", value: e.target.value })}
+            style={{ marginBottom: "18px" }}
           >
             <option value="Pendiente">Pendiente</option>
             <option value="Pagada">Pagada</option>
@@ -300,15 +356,14 @@ export default function Facturas() {
         </div>
       )}
 
-      {/* Modal flotante */}
-      {showForm && (
+      {state.showForm && (
         <div className="modal-form">
           <h2>Nueva Factura</h2>
-          {error && <p style={{color: '#b91c1c'}}>{error}</p>}
+          {displayedError && <p style={{ color: "#b91c1c" }}>{displayedError}</p>}
           <form onSubmit={handleSubmit}>
             <select
-              value={clienteId}
-              onChange={(e) => setClienteId(e.target.value)}
+              value={state.clienteId}
+              onChange={(e) => dispatch({ type: "SET_FIELD", field: "clienteId", value: e.target.value })}
               required
             >
               <option value="">Seleccionar cliente...</option>
@@ -321,40 +376,40 @@ export default function Facturas() {
             <input
               type="text"
               placeholder="N° Factura"
-              value={nroFactura}
-              onChange={(e) => setNroFactura(e.target.value)}
+              value={state.nroFactura}
+              onChange={(e) => dispatch({ type: "SET_FIELD", field: "nroFactura", value: e.target.value })}
               required
             />
             <input
               type="number"
               placeholder="Importe ($)"
-              value={importe}
-              onChange={(e) => setImporte(e.target.value)}
+              value={state.importe}
+              onChange={(e) => dispatch({ type: "SET_FIELD", field: "importe", value: e.target.value })}
               required
             />
-            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px'}}>
-              <div style={{display: 'flex', flexDirection: 'column', gap: '5px'}}>
-                <label style={{fontSize: '0.8rem', color: '#6b7280'}}>Fecha de Emisión</label>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                <label style={{ fontSize: "0.8rem", color: "#6b7280" }}>Fecha de Emisión</label>
                 <input
                   type="date"
-                  value={fechaEmision}
-                  onChange={(e) => setFechaEmision(e.target.value)}
+                  value={state.fechaEmision}
+                  onChange={(e) => dispatch({ type: "SET_FIELD", field: "fechaEmision", value: e.target.value })}
                   required
                 />
               </div>
-              <div style={{display: 'flex', flexDirection: 'column', gap: '5px'}}>
-                <label style={{fontSize: '0.8rem', color: '#6b7280'}}>Fecha de Vencimiento</label>
+              <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+                <label style={{ fontSize: "0.8rem", color: "#6b7280" }}>Fecha de Vencimiento</label>
                 <input
                   type="date"
-                  value={fechaVencimiento}
-                  onChange={(e) => setFechaVencimiento(e.target.value)}
+                  value={state.fechaVencimiento}
+                  onChange={(e) => dispatch({ type: "SET_FIELD", field: "fechaVencimiento", value: e.target.value })}
                   required
                 />
               </div>
             </div>
             <select
-              value={tipoFactura}
-              onChange={(e) => setTipoFactura(e.target.value)}
+              value={state.tipoFactura}
+              onChange={(e) => dispatch({ type: "SET_FIELD", field: "tipoFactura", value: e.target.value })}
               required
             >
               <option value="A">A</option>
@@ -362,16 +417,16 @@ export default function Facturas() {
               <option value="C">C</option>
             </select>
             <select
-              value={operacion}
-              onChange={(e) => setOperacion(e.target.value)}
+              value={state.operacion}
+              onChange={(e) => dispatch({ type: "SET_FIELD", field: "operacion", value: e.target.value })}
               required
             >
               <option value="Venta">Venta</option>
               <option value="Alquiler">Alquiler</option>
             </select>
             <select
-              value={estado}
-              onChange={(e) => setEstado(e.target.value)}
+              value={state.estado}
+              onChange={(e) => dispatch({ type: "SET_FIELD", field: "estado", value: e.target.value })}
               required
             >
               <option value="Pendiente">Pendiente</option>
@@ -381,10 +436,13 @@ export default function Facturas() {
             </select>
             <div className="modal-form-actions">
               <button type="submit" className="btn btn-success">Emitir Factura</button>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="btn btn-secondary"
-                onClick={() => { setShowForm(false); resetForm(); }}
+                onClick={() => {
+                  dispatch({ type: "CLOSE_FORM" });
+                  resetForm();
+                }}
               >
                 Cancelar
               </button>

@@ -1,28 +1,54 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { decrypt } from "../utils/encryptionUtils";
 import "./LoginAdmin.css";
-
-// Credenciales encriptadas (mismo valor que en public/config/credentials.json)
-const ENCRYPTED_CREDENTIALS = {
-  usuario: "U2FsdGVkX18fyfIWM5yLkK6/KBrjaI1y65gJY09hoew=",
-  contraseña: "U2FsdGVkX1/M91uCDH+NmQyKMcFA5g1d6XkN/ca+Nhw="
-};
 
 export default function LoginAdmin({ onLoginSuccess, onCancel }) {
   const [usuario, setUsuario] = useState("");
   const [contraseña, setContraseña] = useState("");
   const [error, setError] = useState("");
+  const [encryptedCredentials, setEncryptedCredentials] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadCredentials() {
+      try {
+        const credentialsUrl = `${import.meta.env.BASE_URL}config/credentials.json`;
+        const response = await fetch(credentialsUrl);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const data = await response.json();
+        setEncryptedCredentials(data.credentials);
+      } catch (err) {
+        console.error("Error cargando credenciales de admin:", err);
+        setError("No se pudieron cargar las credenciales de admin.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadCredentials();
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setError("");
 
-    try {
-      // Desencriptar las credenciales almacenadas
-      const adminUser = decrypt(ENCRYPTED_CREDENTIALS.usuario);
-      const adminPassword = decrypt(ENCRYPTED_CREDENTIALS.contraseña);
+    if (!encryptedCredentials) {
+      setError("Credenciales admin no disponibles.");
+      return;
+    }
 
-      // Comparar con las ingresadas
+    try {
+      const adminUser = decrypt(encryptedCredentials.usuario);
+      const adminPassword = decrypt(encryptedCredentials.contraseña);
+
+      if (!adminUser || !adminPassword) {
+        setError("Error al validar credenciales. Revisa la llave de encriptación.");
+        setContraseña("");
+        return;
+      }
+
       if (usuario === adminUser && contraseña === adminPassword) {
         onLoginSuccess();
         setUsuario("");
@@ -33,9 +59,20 @@ export default function LoginAdmin({ onLoginSuccess, onCancel }) {
       }
     } catch (err) {
       console.error("Error al desencriptar:", err);
-      setError("Error al validar credenciales");
+      setError("Error al validar credenciales. Verifica la llave de encriptación.");
     }
   };
+
+  if (loading) {
+    return (
+      <div className="login-admin-overlay">
+        <div className="login-admin-modal">
+          <h2>Acceso Admin</h2>
+          <p>Cargando credenciales...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="login-admin-overlay">

@@ -1,187 +1,249 @@
 import "./admin.css";
-import { useState, useEffect } from "react";
+import { useMemo, useReducer, useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Card from "../../componentes/Card";
 import { fetchApi, requestApi } from "../../api";
 
-// Tipo de cambio - Dólar Blue actual
 const EXCHANGE_RATE_USD_ARS = 1100; // 1 USD = 1100 ARS (Dólar Blue aprox.)
 
+const initialState = {
+  showForm: false,
+  searchTerm: "",
+  editingId: null,
+  titulo: "",
+  direccion: "",
+  ciudad: "",
+  operacion: "",
+  metrosCuadrados: "",
+  precio: "",
+  tipo: "",
+  imagen: "",
+  descripcion: "",
+  estado: "Disponible",
+  error: null,
+};
+
+function reducer(state, action) {
+  switch (action.type) {
+    case "SET_FIELD":
+      return { ...state, [action.field]: action.value };
+    case "OPEN_FORM":
+      return { ...state, showForm: true, error: null };
+    case "CLOSE_FORM":
+      return { ...state, showForm: false, editingId: null, error: null };
+    case "SET_EDITING":
+      return {
+        ...state,
+        showForm: true,
+        editingId: action.payload.id,
+        titulo: action.payload.titulo || "",
+        direccion: action.payload.direccion || "",
+        ciudad: action.payload.ciudad || "",
+        operacion: action.payload.operacion || "",
+        metrosCuadrados: action.payload.metrosCuadrados?.toString() || "",
+        precio: action.payload.precio?.toString() || "",
+        tipo: action.payload.tipo || "",
+        imagen: action.payload.imagen || "",
+        descripcion: action.payload.descripcion || "",
+        estado: action.payload.estado || "Disponible",
+        error: null,
+      };
+    case "RESET_FORM":
+      return {
+        ...state,
+        editingId: null,
+        titulo: "",
+        direccion: "",
+        ciudad: "",
+        operacion: "",
+        metrosCuadrados: "",
+        precio: "",
+        tipo: "",
+        imagen: "",
+        descripcion: "",
+        estado: "Disponible",
+        error: null,
+      };
+    case "SET_ERROR":
+      return { ...state, error: action.payload };
+    case "CLEAR_ERROR":
+      return { ...state, error: null };
+    default:
+      return state;
+  }
+}
+
 export default function Propiedades() {
-  const [showForm, setShowForm] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [propiedades, setPropiedades] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [editingId, setEditingId] = useState(null);
-  const [titulo, setTitulo] = useState("");
-  const [direccion, setDireccion] = useState("");
-  const [ciudad, setCiudad] = useState("");
-  const [operacion, setOperacion] = useState("");
-  const [metrosCuadrados, setMetrosCuadrados] = useState("");
-  const [precio, setPrecio] = useState("");
-  const [tipo, setTipo] = useState("");
-  const [imagen, setImagen] = useState("");
-  const [descripcion, setDescripcion] = useState("");
-  const [estado, setEstado] = useState("Disponible");
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const queryClient = useQueryClient();
 
-  const loadPropiedades = async () => {
-    setLoading(true);
-    try {
-      const data = await fetchApi("/Propiedades");
-      setPropiedades(data);
-    } catch (err) {
-      console.error(err);
-      setError(err.message);
-      setPropiedades([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    data: propiedades = [],
+    isLoading,
+    isError,
+    error: queryError,
+  } = useQuery({
+    queryKey: ["propiedades"],
+    queryFn: () => fetchApi("/Propiedades"),
+    staleTime: 1000 * 60,
+    retry: 1,
+  });
 
-  useEffect(() => {
-    loadPropiedades();
+  const savePropertyMutation = useMutation({
+    mutationFn: async ({ id, payload }) => {
+      const path = id ? `/Propiedades/${id}` : "/Propiedades";
+      return requestApi(path, {
+        method: id ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(id ? { id, ...payload } : payload),
+      });
+    },
+    onSuccess: async (data, variables) => {
+      await queryClient.invalidateQueries(["propiedades"]);
+      dispatch({ type: "CLOSE_FORM" });
+      dispatch({ type: "RESET_FORM" });
+      window.alert(`Propiedad ${variables.id ? "actualizada" : "creada"} exitosamente.`);
+    },
+    onError: (err) => {
+      dispatch({ type: "SET_ERROR", payload: err.message || "Error al guardar la propiedad. Intenta nuevamente." });
+    },
+  });
+
+  const deletePropertyMutation = useMutation({
+    mutationFn: async (id) => requestApi(`/Propiedades/${id}`, { method: "DELETE" }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries(["propiedades"]);
+    },
+    onError: (err) => {
+      dispatch({ type: "SET_ERROR", payload: err.message || "Error al eliminar la propiedad." });
+    },
+  });
+
+  const resetForm = useCallback(() => {
+    dispatch({ type: "RESET_FORM" });
+    dispatch({ type: "CLEAR_ERROR" });
   }, []);
 
-  const resetForm = () => {
-    setEditingId(null);
-    setTitulo("");
-    setDireccion("");
-    setCiudad("");
-    setOperacion("");
-    setMetrosCuadrados("");
-    setPrecio("");
-    setTipo("");
-    setImagen("");
-    setDescripcion("");
-    setEstado("Disponible");
-    setError(null);
-  };
-
-  const handleEdit = (property) => {
-    setEditingId(property.id);
-    setTitulo(property.titulo || "");
-    setDireccion(property.direccion || "");
-    setCiudad(property.ciudad || "");
-    setOperacion(property.operacion || "");
-    setMetrosCuadrados(property.metrosCuadrados?.toString() || "");
-    setPrecio(property.precio || "");
-    setTipo(property.tipo || "");
-    setImagen(property.imagen || "");
-    setDescripcion(property.descripcion || "");
-    setEstado(property.estado || "Disponible");
-    setShowForm(true);
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("¿Eliminar esta propiedad?")) return;
-    if (!id) {
-      setError("No se pudo eliminar: ID de la propiedad no está definido.");
+  const handleEdit = useCallback((property) => {
+    if (!property?.id) {
+      dispatch({ type: "SET_ERROR", payload: "No se puede editar una propiedad sin ID." });
       return;
     }
+    dispatch({ type: "SET_EDITING", payload: property });
+  }, []);
 
-    try {
-      await requestApi(`/Propiedades/${id}`, { method: "DELETE" });
-      await loadPropiedades();
-    } catch (err) {
-      console.error(err);
-      setError(err.message);
-    }
-  };
+  const handleDelete = useCallback(
+    async (id) => {
+      if (!window.confirm("¿Eliminar esta propiedad?")) return;
+      if (!id) {
+        dispatch({ type: "SET_ERROR", payload: "No se pudo eliminar: ID de la propiedad no está definido." });
+        return;
+      }
+      dispatch({ type: "CLEAR_ERROR" });
+      await deletePropertyMutation.mutateAsync(id);
+    },
+    [deletePropertyMutation]
+  );
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    // Client-side validation
-    const errs = [];
-    if (!titulo || !titulo.toString().trim()) errs.push('Titulo es necesario');
-    if (!direccion || !direccion.toString().trim()) errs.push('Direccion es necesaria');
-    if (!ciudad || !ciudad.toString().trim()) errs.push('Ciudad es necesaria');
-    if (!operacion) errs.push('Operacion es necesaria');
-    if (!tipo) errs.push('Tipo es necesario');
-    const mc = Number(metrosCuadrados);
-    if (Number.isNaN(mc) || mc <= 0) errs.push('MetrosCuadrados invalidos');
-    const p = Number(precio);
-    if (Number.isNaN(p) || p <= 0) errs.push('Precio debe ser mayor a 0');
-    if (!descripcion || !descripcion.toString().trim()) errs.push('Descripcion es necesaria');
-    if (!imagen || !imagen.toString().trim()) errs.push('URL de la imagen es necesaria');
+  const handleSubmit = useCallback(
+    async (event) => {
+      event.preventDefault();
+      dispatch({ type: "CLEAR_ERROR" });
 
-    if (errs.length > 0) {
-      setError(errs.join('. '));
-      return;
-    }
-
-    try {
-      const newProperty = {
+      const {
         titulo,
         direccion,
         ciudad,
         operacion,
-        metrosCuadrados: mc,
-        precio: p,
+        metrosCuadrados,
+        precio,
         tipo,
-        imagen: imagen,
+        imagen,
         descripcion,
         estado,
-      };
+        editingId,
+      } = state;
 
-      const bodyToSend = editingId ? { id: editingId, ...newProperty } : newProperty;
+      const errors = [];
+      if (!titulo || !titulo.toString().trim()) errors.push("Título es necesario");
+      if (!direccion || !direccion.toString().trim()) errors.push("Dirección es necesaria");
+      if (!ciudad || !ciudad.toString().trim()) errors.push("Ciudad es necesaria");
+      if (!operacion) errors.push("Operación es necesaria");
+      if (!tipo) errors.push("Tipo es necesario");
 
-      await requestApi(
-        editingId ? `/Propiedades/${editingId}` : "/Propiedades",
-        {
-          method: editingId ? "PUT" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(bodyToSend),
-        }
-      );
+      const metros = Number(metrosCuadrados);
+      if (Number.isNaN(metros) || metros <= 0) errors.push("Metros cuadrados inválidos");
 
-      await loadPropiedades();
-      setShowForm(false);
-      resetForm();
-      alert(`Propiedad ${editingId ? "actualizada" : "creada"} exitosamente.`);
-    } catch (err) {
-      console.error(err);
-      setError(err.message || "Error al guardar la propiedad. Intenta nuevamente.");
-      alert(`❌ Error: ${err.message || "No se pudo guardar la propiedad. Verifica los datos e intenta nuevamente."}\n\nEl formulario permanece abierto para que corrijas los cambios.`);
-    }
-  };
+      const precioNum = Number(precio);
+      if (Number.isNaN(precioNum) || precioNum <= 0) errors.push("Precio debe ser mayor a 0");
+      if (!descripcion || !descripcion.toString().trim()) errors.push("Descripción es necesaria");
+      if (!imagen || !imagen.toString().trim()) errors.push("URL de la imagen es necesaria");
 
-  const filteredPropiedades = (propiedades || []).filter((p) => {
-    const term = searchTerm.toLowerCase();
-    return [p.ubicacion, p.tipo, p.ciudad, p.direccion].some((value) =>
-      value?.toLowerCase().includes(term)
+      if (errors.length > 0) {
+        dispatch({ type: "SET_ERROR", payload: errors.join(". ") });
+        return;
+      }
+
+      await savePropertyMutation.mutateAsync({
+        id: editingId,
+        payload: {
+          titulo: titulo.toString().trim(),
+          direccion: direccion.toString().trim(),
+          ciudad: ciudad.toString().trim(),
+          operacion,
+          metrosCuadrados: metros,
+          precio: precioNum,
+          tipo,
+          imagen: imagen.toString().trim(),
+          descripcion: descripcion.toString().trim(),
+          estado,
+        },
+      });
+    },
+    [savePropertyMutation, state]
+  );
+
+  const filteredPropiedades = useMemo(() => {
+    const term = state.searchTerm.trim().toLowerCase();
+    return propiedades.filter((p) =>
+      [p.ubicacion, p.tipo, p.ciudad, p.direccion].some((value) =>
+        String(value || "").toLowerCase().includes(term)
+      )
     );
-  });
+  }, [propiedades, state.searchTerm]);
 
-  if (loading) return <div className="admin-section">Cargando propiedades...</div>;
-  if (error) return <div className="admin-section">Error: {error}</div>;
+  const displayedError = state.error || (isError ? queryError?.message : null);
+
+  if (isLoading) return <div className="admin-section">Cargando propiedades...</div>;
+  if (isError && !propiedades.length) return <div className="admin-section">Error: {displayedError}</div>;
 
   return (
     <div className="admin-section">
       <div className="admin-actions-bar">
         <div>
           <h2>Gestión de Propiedades</h2>
-          <p style={{color: '#6b7280', fontSize: '0.9rem'}}>Administra el catálogo visible en la web.</p>
+          <p style={{ color: "#6b7280", fontSize: "0.9rem" }}>Administra el catálogo visible en la web.</p>
         </div>
-        <div className="search-container" style={{maxWidth: '300px'}}>
+        <div className="search-container" style={{ maxWidth: "300px" }}>
           <span className="search-icon">🔍</span>
-          <input 
-            type="text" 
-            className="search-input" 
-            placeholder="Buscar por ubicación o tipo..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Buscar por ubicación o tipo..."
+            value={state.searchTerm}
+            onChange={(e) => dispatch({ type: "SET_FIELD", field: "searchTerm", value: e.target.value })}
           />
         </div>
-        <button className="btn btn-success" onClick={() => setShowForm(true)}>
+        <button className="btn btn-success" onClick={() => dispatch({ type: "OPEN_FORM" })}>
           + Nueva Propiedad
         </button>
       </div>
 
-      <div className="admin-list" style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px', marginTop: '20px'}}>
+      <div className="admin-list" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "24px", marginTop: "20px" }}>
         {filteredPropiedades.length > 0 ? (
           filteredPropiedades.map((p) => (
-            <div key={p.id} style={{position: 'relative', display: 'flex', flexDirection: 'column'}}>
-              <Card 
+            <div key={p.id} style={{ position: "relative", display: "flex", flexDirection: "column" }}>
+              <Card
                 tipo={p.tipo}
                 estado={p.estado}
                 imagen={p.imagenes?.[0]?.url}
@@ -194,10 +256,10 @@ export default function Propiedades() {
                 exchangeRate={EXCHANGE_RATE_USD_ARS}
                 descripcion={p.descripcion}
               />
-              <div style={{display: 'flex', gap: '8px', marginTop: '10px'}}>
+              <div style={{ display: "flex", gap: "8px", marginTop: "10px" }}>
                 <button
                   className="action-btn"
-                  style={{background: '#2563eb', color: 'white', borderRadius: '8px', padding: '8px 12px', flex: 1, fontSize: '14px'}}
+                  style={{ background: "#2563eb", color: "white", borderRadius: "8px", padding: "8px 12px", flex: 1, fontSize: "14px" }}
                   onClick={() => handleEdit(p)}
                   type="button"
                   title="Editar"
@@ -206,7 +268,7 @@ export default function Propiedades() {
                 </button>
                 <button
                   className="action-btn"
-                  style={{background: '#dc2626', color: 'white', borderRadius: '8px', padding: '8px 12px', flex: 1, fontSize: '14px'}}
+                  style={{ background: "#dc2626", color: "white", borderRadius: "8px", padding: "8px 12px", flex: 1, fontSize: "14px" }}
                   onClick={() => handleDelete(p.id)}
                   type="button"
                   title="Eliminar"
@@ -217,50 +279,46 @@ export default function Propiedades() {
             </div>
           ))
         ) : (
-          <div style={{gridColumn: '1 / -1', textAlign: 'center', padding: '60px', background: 'white', borderRadius: '12px'}}>
+          <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "60px", background: "white", borderRadius: "12px" }}>
             No se encontraron propiedades.
           </div>
         )}
       </div>
 
-      {/* Overlay oscuro */}
-      {showForm && (
-        <div className="modal-overlay" onClick={() => setShowForm(false)}></div>
-      )}
+      {state.showForm && <div className="modal-overlay" onClick={() => dispatch({ type: "CLOSE_FORM" })}></div>}
 
-      {/* Modal flotante */}
-      {showForm && (
+      {state.showForm && (
         <div className="modal-form">
-          <h2>{editingId ? "Editar Propiedad" : "Nueva Propiedad"}</h2>
-          {error && <div style={{color: '#b91c1c', marginBottom: '12px'}}>{error}</div>}
+          <h2>{state.editingId ? "Editar Propiedad" : "Nueva Propiedad"}</h2>
+          {displayedError && <div style={{ color: "#b91c1c", marginBottom: "12px" }}>{displayedError}</div>}
           <form onSubmit={handleSubmit}>
             <input
               type="text"
               placeholder="Título"
-              value={titulo}
-              onChange={(e) => setTitulo(e.target.value)}
+              value={state.titulo}
+              onChange={(e) => dispatch({ type: "SET_FIELD", field: "titulo", value: e.target.value })}
               required
             />
-            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px'}}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
               <input
                 type="text"
                 placeholder="Dirección"
-                value={direccion}
-                onChange={(e) => setDireccion(e.target.value)}
+                value={state.direccion}
+                onChange={(e) => dispatch({ type: "SET_FIELD", field: "direccion", value: e.target.value })}
                 required
               />
               <input
                 type="text"
                 placeholder="Ciudad"
-                value={ciudad}
-                onChange={(e) => setCiudad(e.target.value)}
+                value={state.ciudad}
+                onChange={(e) => dispatch({ type: "SET_FIELD", field: "ciudad", value: e.target.value })}
                 required
               />
             </div>
-            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px'}}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginTop: "10px" }}>
               <select
-                value={operacion}
-                onChange={(e) => setOperacion(e.target.value)}
+                value={state.operacion}
+                onChange={(e) => dispatch({ type: "SET_FIELD", field: "operacion", value: e.target.value })}
                 required
               >
                 <option value="">Operación</option>
@@ -268,8 +326,8 @@ export default function Propiedades() {
                 <option value="Alquiler">Alquiler</option>
               </select>
               <select
-                value={tipo}
-                onChange={(e) => setTipo(e.target.value)}
+                value={state.tipo}
+                onChange={(e) => dispatch({ type: "SET_FIELD", field: "tipo", value: e.target.value })}
                 required
               >
                 <option value="">Tipo</option>
@@ -280,53 +338,55 @@ export default function Propiedades() {
               </select>
             </div>
             <select
-              value={estado}
-              onChange={(e) => setEstado(e.target.value)}
+              value={state.estado}
+              onChange={(e) => dispatch({ type: "SET_FIELD", field: "estado", value: e.target.value })}
               required
             >
               <option value="Disponible">Disponible</option>
               <option value="Alquilada">Alquilada</option>
               <option value="Vendida">Vendida</option>
             </select>
-            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px'}}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginTop: "10px" }}>
               <input
                 type="number"
                 placeholder="Metros cuadrados"
-                value={metrosCuadrados}
-                onChange={(e) => setMetrosCuadrados(e.target.value)}
+                value={state.metrosCuadrados}
+                onChange={(e) => dispatch({ type: "SET_FIELD", field: "metrosCuadrados", value: e.target.value })}
                 required
                 min="0"
               />
               <input
                 type="text"
                 placeholder="Precio (en USD)"
-                value={precio}
-                onChange={(e) => setPrecio(e.target.value)}
+                value={state.precio}
+                onChange={(e) => dispatch({ type: "SET_FIELD", field: "precio", value: e.target.value })}
                 required
               />
             </div>
-            <p style={{fontSize: '0.85rem', color: '#6b7280', margin: '8px 0 0 0'}}>💵 El precio debe ser ingresado en dólares <strong>SIN PUNTOS</strong> (ej: 50000 o 50000.50). Se convertirá automáticamente a pesos (Dólar Blue: 1 USD = $${EXCHANGE_RATE_USD_ARS} ARS)</p>
+            <p style={{ fontSize: "0.85rem", color: "#6b7280", margin: "8px 0 0 0" }}>
+              💵 El precio debe ser ingresado en dólares <strong>SIN PUNTOS</strong> (ej: 50000 o 50000.50). Se convertirá automáticamente a pesos (Dólar Blue: 1 USD = ${EXCHANGE_RATE_USD_ARS} ARS)
+            </p>
             <input
               type="text"
               placeholder="URL de la imagen"
-              value={imagen}
-              onChange={(e) => setImagen(e.target.value)}
+              value={state.imagen}
+              onChange={(e) => dispatch({ type: "SET_FIELD", field: "imagen", value: e.target.value })}
             />
             <textarea
               placeholder="Descripción detallada de la propiedad"
-              value={descripcion}
-              onChange={(e) => setDescripcion(e.target.value)}
+              value={state.descripcion}
+              onChange={(e) => dispatch({ type: "SET_FIELD", field: "descripcion", value: e.target.value })}
             />
             <div className="modal-form-actions">
               <button type="submit" className="btn btn-success">
-                {editingId ? "Actualizar Propiedad" : "Guardar Propiedad"}
+                {state.editingId ? "Actualizar Propiedad" : "Guardar Propiedad"}
               </button>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="btn btn-secondary"
                 onClick={() => {
                   resetForm();
-                  setShowForm(false);
+                  dispatch({ type: "CLOSE_FORM" });
                 }}
               >
                 Cancelar
