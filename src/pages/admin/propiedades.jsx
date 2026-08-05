@@ -43,7 +43,7 @@ function reducer(state, action) {
         metrosCuadrados: action.payload.metrosCuadrados?.toString() || "",
         precio: action.payload.precio?.toString() || "",
         tipo: action.payload.tipo || "",
-        imagen: action.payload.imagen || "",
+        imagen: action.payload.imagen || action.payload.imagenes?.[0]?.url || action.payload.imagenes?.[0] || "",
         descripcion: action.payload.descripcion || "",
         estado: action.payload.estado || "Disponible",
         error: null,
@@ -184,6 +184,8 @@ export default function Propiedades() {
         return;
       }
 
+      const imageUrl = imagen.toString().trim();
+
       await savePropertyMutation.mutateAsync({
         id: editingId,
         payload: {
@@ -194,7 +196,7 @@ export default function Propiedades() {
           metrosCuadrados: metros,
           precio: precioNum,
           tipo,
-          imagen: imagen.toString().trim(),
+          imagenes: [imageUrl],
           descripcion: descripcion.toString().trim(),
           estado,
         },
@@ -246,7 +248,7 @@ export default function Propiedades() {
               <Card
                 tipo={p.tipo}
                 estado={p.estado}
-                imagen={p.imagenes?.[0]?.url}
+                imagen={p.imagen || p.imagenes?.[0]?.url || p.imagenes?.[0]}
                 titulo={p.titulo}
                 direccion={p.direccion}
                 ciudad={p.ciudad}
@@ -364,7 +366,7 @@ export default function Propiedades() {
               />
             </div>
             <p style={{ fontSize: "0.85rem", color: "#6b7280", margin: "8px 0 0 0" }}>
-              💵 El precio debe ser ingresado en dólares <strong>SIN PUNTOS</strong> (ej: 50000 o 50000.50). Se convertirá automáticamente a pesos (Dólar Blue: 1 USD = ${EXCHANGE_RATE_USD_ARS} ARS)
+              💵 El precio debe ser ingresado en dólares SIN PUNTOS (ej: 50000 o 50000.50). Se convertirá automáticamente a pesos (Dólar Blue: 1 USD = ${EXCHANGE_RATE_USD_ARS} ARS)
             </p>
             <input
               type="text"

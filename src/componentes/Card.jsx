@@ -12,7 +12,18 @@ function Card({
   precioUSD = 0,
   exchangeRate = 900,
   descripcion = "Sin descripción disponible.",
-}) {
+})
+{
+  const resolveImageUrl = (value) => {
+    if (Array.isArray(value)) {
+      return value[0]?.url || value[0] || "";
+    }
+    if (typeof value === "string") return value;
+    if (value && typeof value === "object") return value.url || "";
+    return "";
+  };
+
+  const imageUrl = resolveImageUrl(imagen) || "https://picsum.photos/500/320";
   const ubicacion = ciudad ? `${direccion}, ${ciudad}` : direccion;
   const metrosText = metrosCuadrados ? `${metrosCuadrados} m²` : null;
   const precioARS = precioUSD ? Math.round(precioUSD * exchangeRate) : null;
@@ -29,7 +40,7 @@ function Card({
         </span>
       </div>
 
-      <img src={imagen} alt={titulo} />
+      <img src={imageUrl} alt={titulo} />
 
       <div className="card-body">
         <h3 className="card-title">{titulo}</h3>
