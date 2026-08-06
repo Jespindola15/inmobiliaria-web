@@ -1,12 +1,16 @@
 .navbar {
-  background: rgba(255, 255, 255, 0.98);
+  background: rgba(255, 255, 255, 0.89);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(241, 245, 249, 0.7);
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
   position: sticky;
   top: 0;
   z-index: 1000;
-  padding: 18px 24px;
+  padding: 10px 24px;
+  border-radius: 999px;
+  margin: 16px auto 0;
+  max-width: 1180px;
+  width: calc(100% - 32px);
 }
 
 .nav-content {

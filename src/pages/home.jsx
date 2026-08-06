@@ -60,8 +60,6 @@ function Home() {
       {/* HERO */}
       <section id="inicio" className="hero">
         <div className="container hero-grid">
-          
-          {/* TEXTO */}
           <div className="hero-text">
             <span className="badge">Inmobiliaria Líder en Buenos Aires</span>
 
@@ -79,12 +77,6 @@ function Home() {
               <button className="btn-secondary">Solicitar Visita</button>
             </div>
           </div>
-
-          {/* IMAGEN */}
-          <div className="hero-img">
-            <img src="/inmobiliaria-web/hero.png" alt="Propiedad" />          
-          </div>
-
         </div>
       </section>
 
