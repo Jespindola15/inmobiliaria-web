@@ -10,19 +10,25 @@ function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const normalizeProperty = (property) => ({
-    id: property.id ?? property._id,
-    tipo: property.tipo ?? "Propiedad",
-    estado: property.estado ?? "Disponible",
-    imagen: property.imagen ?? property.imagenes?.[0] ?? "https://picsum.photos/500/320",
-    titulo: property.titulo ?? property.descripcion ?? "Propiedad disponible",
-    direccion: property.direccion ?? "Dirección no disponible",
-    ciudad: property.ciudad ?? "",
-    metrosCuadrados: property.metrosCuadrados ?? property.m2 ?? null,
-    operacion: property.operacion ?? "",
-    precio: property.precio ? `$ ${property.precio}` : "Consultar",
-    descripcion: property.descripcion ?? "Sin descripción disponible.",
-  });
+  const normalizeProperty = (property) => {
+    const firstImage = Array.isArray(property.imagenes)
+      ? (property.imagenes[0]?.url || property.imagenes[0])
+      : (property.imagen ?? property.imagenes?.[0]?.url ?? property.imagenes?.[0]);
+
+    return {
+      id: property.id ?? property._id,
+      tipo: property.tipo ?? "Propiedad",
+      estado: property.estado ?? "Disponible",
+      imagen: property.imagen ?? firstImage ?? "https://picsum.photos/500/320",
+      titulo: property.titulo ?? property.descripcion ?? "Propiedad disponible",
+      direccion: property.direccion ?? "Dirección no disponible",
+      ciudad: property.ciudad ?? "",
+      metrosCuadrados: property.metrosCuadrados ?? property.m2 ?? null,
+      operacion: property.operacion ?? "",
+      precio: property.precio ? `$ ${property.precio}` : "Consultar",
+      descripcion: property.descripcion ?? "Sin descripción disponible.",
+    };
+  };
 
   const loadPropiedades = useCallback(async () => {
     try {
