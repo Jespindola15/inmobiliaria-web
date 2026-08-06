@@ -26,9 +26,10 @@ function Card({
   const imageUrl = resolveImageUrl(imagen) || "https://picsum.photos/500/320";
   const ubicacion = ciudad ? `${direccion}, ${ciudad}` : direccion;
   const metrosText = metrosCuadrados ? `${metrosCuadrados} m²` : null;
-  const precioARS = precioUSD ? Math.round(precioUSD * exchangeRate) : null;
-  const precioText = precioUSD
-    ? `USD ${precioUSD.toLocaleString('es-AR')} / $${precioARS.toLocaleString('es-AR')}`
+  const precioNum = Number(precioUSD);
+  const precioARS = Number.isFinite(precioNum) && precioNum > 0 ? Math.round(precioNum * exchangeRate) : null;
+  const precioText = Number.isFinite(precioNum) && precioNum > 0
+    ? `USD ${precioNum.toLocaleString('es-AR')} / $${precioARS.toLocaleString('es-AR')}`
     : "Consultar";
 
   return (

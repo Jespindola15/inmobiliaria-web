@@ -25,7 +25,7 @@ function Home() {
       ciudad: property.ciudad ?? "",
       metrosCuadrados: property.metrosCuadrados ?? property.m2 ?? null,
       operacion: property.operacion ?? "",
-      precio: property.precio ? `$ ${property.precio}` : "Consultar",
+      precio: property.precio ? Number(property.precio) : null,
       descripcion: property.descripcion ?? "Sin descripción disponible.",
     };
   };
@@ -88,11 +88,11 @@ function Home() {
 
       {/* PROPIEDADES */}
       <section id="propiedades" className="propiedades container">
-        <div className="section-header" style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap'}}>
-          <div>
-            <h2>Propiedades en Stock</h2>
-            <p className="sub">Explora nuestras unidades destacadas y listas para habitar.</p>
-          </div>
+        <div className="section-header">
+          {!loading && !error && (
+            <p className="section-info">Propiedades encontradas: {propiedades.length}</p>
+          )}
+
           <button
             className="btn btn-secondary"
             type="button"
@@ -113,9 +113,6 @@ function Home() {
             </p>
           ) : propiedades.length > 0 ? (
             <>
-              <p style={{textAlign: 'center', marginBottom: '20px', color: '#334155'}}>
-                Propiedades encontradas: {propiedades.length}
-              </p>
               <div className="cards-grid">
                 {propiedades.map((p) => (
                   <Card
@@ -128,7 +125,7 @@ function Home() {
                     ciudad={p.ciudad}
                     metrosCuadrados={p.metrosCuadrados}
                     operacion={p.operacion}
-                    precio={p.precio}
+                    precioUSD={p.precio}
                     descripcion={p.descripcion}
                   />
                 ))}
